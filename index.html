@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zudo Launcher | The Ultimate Minecraft Experience</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://unpkg.com/lucide@0.321.0"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #020202;
+            color: #ffffff;
+            overflow-x: hidden;
+        }
+        .glass {
+            background: rgba(255, 255, 255, 0.02);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .zudo-accent {
+            background: linear-gradient(135deg, #00f2ff 0%, #0088ff 100%);
+        }
+        .text-glow {
+            text-shadow: 0 0 30px rgba(0, 242, 255, 0.6);
+        }
+        .reveal {
+            opacity: 0;
+            transform: translateY(40px);
+            transition: all 1s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .reveal.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .logo-glow {
+            filter: drop-shadow(0 0 20px rgba(0, 242, 255, 0.3));
+        }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #020202; }
+        ::-webkit-scrollbar-thumb { background: #00f2ff; border-radius: 4px; }
+        html { scroll-behavior: smooth; }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
+
+        const useScrollReveal = () => {
+            const ref = useRef(null);
+            useEffect(() => {
+                const observer = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            entry.target.classList.add('active');
+                        }
+                    });
+                }, { threshold: 0.1 });
+                
+                if (ref.current) observer.observe(ref.current);
+                return () => { if (ref.current) observer.unobserve(ref.current); };
+            }, []);
+            return ref;
+        };
+
+        const Navbar = () => {
+            const [scrolled, setScrolled] = useState(false);
+            useEffect(() => {
+                const handleScroll = () => setScrolled(window.scrollY > 50);
+                window.addEventListener('scroll', handleScroll);
+                return () => window.removeEventListener('scroll', handleScroll);
+            }, []);
+
+            return (
+                <nav className={`fixed top-0 w-full z-50 transition-all duration-500 ${scrolled ? 'glass py-3 border-b border-white/10' : 'bg-transparent py-6'}`}>
+                    <div className="max-w-7xl mx-auto px-6 flex justify-between items-center">
+                        <div className="flex items-center gap-4">
+                            <img src="IMG_20260514_135615.jpg" alt="Zudo Logo" className="w-12 h-12 rounded-lg" />
+                            <span className="text-xl font-black tracking-tighter uppercase">Zudo <span className="text-cyan-400">Launcher</span></span>
+                        </div>
+                        <div className="hidden md:flex items-center gap-10 text-sm font-bold uppercase tracking-widest text-gray-400">
+                            <a href="#features" className="hover:text-cyan-400 transition-colors">Features</a>
+                            <a href="#about" className="hover:text-cyan-400 transition-colors">About</a>
+                            <a href="#" className="zudo-accent px-8 py-3 rounded-full text-black font-black shadow-[0_5px_20px_rgba(0,242,255,0.4)] hover:scale-105 transition-transform active:scale-95">Download</a>
+                        </div>
+                    </div>
+                </nav>
+            );
+        };
+
+        const Hero = () => {
+            const revealRef = useScrollReveal();
+            return (
+                <section className="relative min-h-screen flex flex-col items-center justify-center pt-32 pb-20 px-6 overflow-hidden">
+                    <div className="absolute top-[-20%] left-[-10%] w-[60%] h-[60%] bg-cyan-900/20 blur-[150px] rounded-full"></div>
+                    <div className="absolute bottom-[-20%] right-[-10%] w-[60%] h-[60%] bg-blue-900/10 blur-[150px] rounded-full"></div>
+                    
+                    <div ref={revealRef} className="reveal relative z-10 max-w-5xl text-center">
+                        <div className="inline-flex items-center gap-2 px-6 py-2 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 text-sm font-black mb-10 uppercase tracking-[0.2em] animate-pulse">
+                            Launching May 16th
+                        </div>
+                        
+                        <div className="mb-10 flex justify-center">
+                            <img src="IMG_20260514_135615.jpg" className="w-48 h-48 md:w-64 md:h-64 rounded-[2.5rem] logo-glow shadow-2xl rotate-1 hover:rotate-0 transition-all duration-500" alt="Zudo Launcher Logo" />
+                        </div>
+
+                        <h1 className="text-6xl md:text-9xl font-black mb-10 leading-[1] tracking-tighter">
+                            THE NEW <br/>
+                            <span className="text-cyan-400 text-glow italic">STANDARD.</span>
+                        </h1>
+                        <p className="text-xl md:text-2xl text-gray-400 max-w-2xl mx-auto mb-14 leading-relaxed font-medium">
+                            The ultimate, lightest Minecraft hub designed for peak FPS and zero interruptions.
+                        </p>
+                        
+                        <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
+                            <button className="zudo-accent w-full sm:w-auto px-16 py-6 rounded-2xl text-xl font-black text-black shadow-[0_15px_50px_rgba(0,242,255,0.4)] hover:-translate-y-1 transition-all active:scale-95">
+                                GET READY
+                            </button>
+                            <button className="glass w-full sm:w-auto px-16 py-6 rounded-2xl text-xl font-black hover:bg-white/5 transition-all border border-white/10">
+                                MAY 16 RELEASE
+                            </button>
+                        </div>
+                    </div>
+                </section>
+            );
+        };
+
+        const Features = () => {
+            const features = [
+                { title: "Pure Speed", desc: "Optimized launch sequences and JVM handling for the fastest startup in the game.", icon: "zap" },
+                { title: "Zero Lag", desc: "Engineered to minimize background CPU usage, keeping your memory dedicated to Minecraft.", icon: "activity" },
+                { title: "Universal", desc: "Support for all major mod loaders and versions with simple, one-click management.", icon: "layers" },
+                { title: "Secured", desc: "Safe, encrypted authentication and stable connections for peace of mind.", icon: "shield-check" }
+            ];
+
+            return (
+                <section id="features" className="py-32 bg-[#050505] relative">
+                    <div className="max-w-7xl mx-auto px-6">
+                        <div className="mb-24 text-center md:text-left">
+                            <h2 className="text-5xl md:text-7xl font-black mb-8 tracking-tighter uppercase">Built to <span className="text-cyan-400">Perform.</span></h2>
+                            <div className="h-2 w-24 zudo-accent rounded-full hidden md:block"></div>
+                        </div>
+                        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+                            {features.map((f, i) => {
+                                const ref = useScrollReveal();
+                                return (
+                                    <div 
+                                        key={i} 
+                                        ref={ref}
+                                        className="reveal p-12 rounded-[3rem] glass hover:bg-cyan-500/5 transition-all group relative overflow-hidden"
+                                        style={{ transitionDelay: `${i * 100}ms` }}
+                                    >
+                                        <div className="w-16 h-16 zudo-accent rounded-2xl flex items-center justify-center mb-10 shadow-[0_0_20px_rgba(0,242,255,0.3)] group-hover:scale-110 transition-transform">
+                                            <i data-lucide={f.icon} className="text-black w-8 h-8"></i>
+                                        </div>
+                                        <h3 className="text-3xl font-black mb-6 uppercase tracking-tight">{f.title}</h3>
+                                        <p className="text-gray-400 text-lg leading-relaxed font-medium">{f.desc}</p>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </div>
+                </section>
+            );
+        };
+
+        const AboutUs = () => {
+            const revealRef = useScrollReveal();
+            return (
+                <section id="about" className="py-40 overflow-hidden relative">
+                    <div className="max-w-7xl mx-auto px-6">
+                        <div ref={revealRef} className="reveal flex flex-col lg:flex-row items-center gap-24">
+                            <div className="lg:w-3/5">
+                                <h2 className="text-5xl md:text-7xl font-black mb-12 tracking-tighter uppercase leading-[0.9]">
+                                    Our Mission & <br/>
+                                    <span className="text-cyan-400">The Story of Zudo</span>
+                                </h2>
+                                <div className="space-y-10 text-gray-400 text-xl leading-relaxed font-medium italic">
+                                    <p>Zudo Launcher was created with one goal in mind: delivering a fast, clean, and smooth Minecraft experience for every player.</p>
+                                    <p>We focus on performance, simplicity, and stability while keeping the launcher lightweight and easy to use. Our aim is to provide players with a reliable platform where they can enjoy Minecraft without unnecessary clutter or complications.</p>
+                                    <p>Alongside the launcher, we are building a friendly community where players can connect, get support, share feedback, and stay updated with new features and improvements.</p>
+                                    <p>Our team continuously works on optimization, security, and new features to make the launcher better with every update. We also listen closely to community feedback to improve the overall experience for all players.</p>
+                                    <div className="text-white font-black p-10 bg-cyan-500/10 border-l-[6px] border-cyan-400 rounded-r-3xl not-italic">
+                                        Zudo Launcher is constantly evolving, and we are committed to improving the experience for our community every day.
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="lg:w-2/5 relative group">
+                                <div className="absolute -inset-10 bg-cyan-500/20 blur-[100px] rounded-full group-hover:bg-cyan-500/30 transition-all duration-700"></div>
+                                <div className="relative glass p-6 rounded-[3.5rem] shadow-2xl rotate-2 hover:rotate-0 transition-all duration-700">
+                                    <img 
+                                        src="IMG_20260514_135615.jpg" 
+                                        className="w-full rounded-[2.5rem] grayscale group-hover:grayscale-0 transition-all" 
+                                        alt="Launcher Graphic"
+                                    />
+                                    <div className="absolute -bottom-10 -right-10 p-10 zudo-accent rounded-full text-black font-black text-2xl shadow-xl">
+                                        MAY 16
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            );
+        };
+
+        const Footer = () => (
+            <footer className="py-24 border-t border-white/5 bg-[#010101]">
+                <div className="max-w-7xl mx-auto px-6">
+                    <div className="flex flex-col md:flex-row justify-between items-center gap-16 mb-20">
+                        <div className="flex items-center gap-4">
+                            <img src="IMG_20260514_135615.jpg" className="w-10 h-10 rounded-lg" alt="Logo" />
+                            <span className="font-black tracking-tighter text-2xl uppercase">ZUDO</span>
+                        </div>
+                        <div className="flex flex-wrap justify-center gap-10 text-gray-500 font-bold uppercase text-sm tracking-[0.2em]">
+                            <a href="#" className="hover:text-cyan-400 transition-colors">Documentation</a>
+                            <a href="#" className="hover:text-cyan-400 transition-colors">Privacy</a>
+                            <a href="#" className="hover:text-cyan-400 transition-colors">Security</a>
+                            <a href="#" className="hover:text-cyan-400 transition-colors">Contact</a>
+                        </div>
+                    </div>
+                    <div className="text-center text-gray-600 text-sm max-w-4xl mx-auto leading-loose font-medium">
+                        &copy; 2024 Zudo Launcher Project. <br/>
+                        Launch Date: May 16th, 2024. <br/><br/>
+                        <span className="opacity-50">Zudo is an independent project and is not affiliated with, authorized, maintained, sponsored or endorsed by Mojang Studios, Microsoft, or any of its affiliates or subsidiaries.</span>
+                    </div>
+                </div>
+            </footer>
+        );
+
+        const App = () => {
+            useEffect(() => {
+                if (window.lucide) {
+                    window.lucide.createIcons();
+                }
+            }, []);
+
+            return (
+                <div className="min-h-screen">
+                    <Navbar />
+                    <Hero />
+                    <Features />
+                    <AboutUs />
+                    <Footer />
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
