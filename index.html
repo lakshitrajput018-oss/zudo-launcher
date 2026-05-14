@@ -17,6 +17,19 @@
             color: #ffffff;
             overflow-x: hidden;
         }
+        .pale-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 50% 50%, rgba(200, 230, 255, 0.03) 0%, rgba(0, 0, 0, 0) 70%);
+            pointer-events: none;
+            z-index: 1;
+        }
+        .frost-blur {
+            backdrop-filter: blur(8px) saturate(0.8);
+        }
         .glass {
             background: rgba(255, 255, 255, 0.02);
             backdrop-filter: blur(12px);
@@ -64,6 +77,79 @@
 
     <script type="text/babel">
         const { useState, useEffect, useRef } = React;
+
+        const SnowEffect = () => {
+            const canvasRef = useRef(null);
+
+            useEffect(() => {
+                const canvas = canvasRef.current;
+                const ctx = canvas.getContext('2d');
+                let animationFrameId;
+
+                let particles = [];
+                const particleCount = 100;
+
+                const resize = () => {
+                    canvas.width = window.innerWidth;
+                    canvas.height = window.innerHeight;
+                };
+
+                class Snowflake {
+                    constructor() {
+                        this.reset();
+                    }
+                    reset() {
+                        this.x = Math.random() * canvas.width;
+                        this.y = Math.random() * -canvas.height;
+                        this.size = Math.random() * 3 + 1;
+                        this.speed = Math.random() * 1 + 0.5;
+                        this.velX = (Math.random() - 0.5) * 0.5;
+                        this.opacity = Math.random() * 0.5 + 0.2;
+                    }
+                    update() {
+                        this.y += this.speed;
+                        this.x += this.velX;
+                        if (this.y > canvas.height) this.reset();
+                    }
+                    draw() {
+                        ctx.fillStyle = `rgba(255, 255, 255, ${this.opacity})`;
+                        ctx.beginPath();
+                        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                }
+
+                const init = () => {
+                    resize();
+                    particles = Array.from({ length: particleCount }, () => new Snowflake());
+                };
+
+                const animate = () => {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    particles.forEach(p => {
+                        p.update();
+                        p.draw();
+                    });
+                    animationFrameId = requestAnimationFrame(animate);
+                };
+
+                window.addEventListener('resize', resize);
+                init();
+                animate();
+
+                return () => {
+                    window.removeEventListener('resize', resize);
+                    cancelAnimationFrame(animationFrameId);
+                };
+            }, []);
+
+            return (
+                <canvas 
+                    ref={canvasRef} 
+                    className="fixed top-0 left-0 w-full h-full pointer-events-none z-0 opacity-40"
+                />
+            );
+        };
 
         const useScrollReveal = () => {
             const ref = useRef(null);
@@ -243,11 +329,28 @@
         const DownloadPage = () => {
             const [selectedOS, setSelectedOS] = useState('windows');
             
+            // STEP 1: UPLOAD YOUR FILES TO A HOST (GitHub, MediaFire, Google Drive, or your own server)
+            // STEP 2: PASTE THE DIRECT DOWNLOAD LINKS BELOW
+            const downloadLinks = {
+                windows: "https://your-link-here.com/ZudoLauncher.exe",
+                macos: "https://your-link-here.com/ZudoLauncher.dmg",
+                linux: "https://your-link-here.com/ZudoLauncher.AppImage"
+            };
+            
             const platforms = [
                 { id: 'windows', name: 'Windows', icon: 'monitor', ext: '.exe', version: 'v1.0.4' },
                 { id: 'macos', name: 'macOS', icon: 'apple', ext: '.dmg', version: 'v1.0.4' },
                 { id: 'linux', name: 'Linux', icon: 'terminal', ext: '.AppImage', version: 'v1.0.4' }
             ];
+
+            const handleDownload = (osId) => {
+                const link = downloadLinks[osId];
+                if (link && link !== "https://your-link-here.com/...") {
+                    window.location.href = link;
+                } else {
+                    alert("Download link not set yet! Please add your URL to the code.");
+                }
+            };
 
             return (
                 <div className="pt-32 pb-20 px-6 min-h-screen">
@@ -269,11 +372,11 @@
                                     <div className={`w-14 h-14 rounded-2xl flex items-center justify-center mb-8 ${selectedOS === p.id ? 'zudo-accent text-black' : 'bg-white/5 text-white'}`}>
                                         <i data-lucide={p.icon} className="w-8 h-8"></i>
                                     </div>
-                                    <h3 className="text-2xl font-black mb-2 uppercase">{p.name}</h3>
-                                    <p className="text-gray-500 font-bold text-sm tracking-widest mb-10">{p.version} | {p.ext}</p>
-                                    
-                                    <button className={`w-full py-5 rounded-2xl font-black transition-all ${selectedOS === p.id ? 'zudo-accent text-black shadow-[0_10px_30px_rgba(0,242,255,0.3)]' : 'bg-white/5 text-white/40 cursor-not-allowed'}`}>
-                                        {selectedOS === p.id ? 'PRE-DOWNLOAD' : 'SELECT OS'}
+                                    <button 
+                                        onClick={() => handleDownload(p.id)}
+                                        className={`w-full py-5 rounded-2xl font-black transition-all ${selectedOS === p.id ? 'zudo-accent text-black shadow-[0_10px_30px_rgba(0,242,255,0.3)]' : 'bg-white/5 text-white/40 cursor-not-allowed'}`}
+                                    >
+                                        {selectedOS === p.id ? 'DOWNLOAD NOW' : 'SELECT OS'}
                                     </button>
                                 </div>
                             ))}
@@ -350,18 +453,24 @@
             }, [currentPage]);
 
             return (
-                <div className="min-h-screen bg-[#020202]">
+                <div className="min-h-screen bg-[#020202] relative">
+                    {}
+                    <SnowEffect />
+                    <div className="pale-overlay"></div>
+                    
                     <Navbar currentPage={currentPage} setCurrentPage={setCurrentPage} />
                     
-                    {currentPage === 'home' ? (
-                        <>
-                            <Hero setCurrentPage={setCurrentPage} />
-                            <Features />
-                            <AboutUs />
-                        </>
-                    ) : (
-                        <DownloadPage />
-                    )}
+                    <div className="relative z-10">
+                        {currentPage === 'home' ? (
+                            <>
+                                <Hero setCurrentPage={setCurrentPage} />
+                                <Features />
+                                <AboutUs />
+                            </>
+                        ) : (
+                            <DownloadPage />
+                        )}
+                    </div>
                     
                     <Footer />
                 </div>
