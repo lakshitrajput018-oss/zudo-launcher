@@ -1,855 +1,399 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Zudo Launcher | The Next Generation of Minecraft</title>
-    
+    <title>ZUDO | The Ultimate Minecraft Client</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@200;300;400;500;600;700;800&family=JetBrains+Mono:wght@100;400;700&family=Outfit:wght@400;700;900&display=swap" rel="stylesheet">
-
     <style>
         :root {
-            /* Brand Colors */
-            --zudo-cyan: #00f2ff;
-            --zudo-cyan-glow: rgba(0, 242, 255, 0.4);
-            --zudo-blue: #0062ff;
-            --zudo-blue-glow: rgba(0, 98, 255, 0.4);
-            
-            /* Backgrounds */
-            --bg-dark: #030303;
-            --bg-card: rgba(15, 15, 20, 0.6);
-            --bg-glass: rgba(255, 255, 255, 0.02);
-            
-            /* Borders */
-            --border-light: rgba(255, 255, 255, 0.05);
-            --border-focus: rgba(0, 242, 255, 0.3);
-            
-            /* Typography */
-            --font-main: 'Plus Jakarta Sans', sans-serif;
-            --font-mono: 'JetBrains Mono', monospace;
-            --font-display: 'Outfit', sans-serif;
+            --primary: #00e1ff; /* Matching the cyan in logo.png */
+            --secondary: #0072ff;
+            --bg-dark: #020203;
+            --accent-glow: rgba(0, 225, 255, 0.15);
         }
-
-        /* Reset & Base */
-        * { box-sizing: border-box; margin: 0; padding: 0; }
         
-        html {
-            scroll-behavior: smooth;
-        }
-
         body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
             background-color: var(--bg-dark);
             color: #ffffff;
-            font-family: var(--font-main);
             overflow-x: hidden;
-            line-height: 1.6;
+        }
+
+        .font-heading { font-family: 'Space Grotesk', sans-serif; }
+
+        /* Premium Mesh Gradient Background */
+        .mesh-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -2;
+            background: 
+                radial-gradient(circle at 15% 15%, rgba(0, 225, 255, 0.07) 0%, transparent 45%),
+                radial-gradient(circle at 85% 85%, rgba(0, 114, 255, 0.08) 0%, transparent 45%);
+        }
+
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.01);
+            backdrop-filter: blur(25px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8);
+        }
+
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.02);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+
+        .neon-border {
+            position: relative;
+            border-radius: 1rem;
+        }
+        
+        .neon-border::after {
+            content: '';
+            position: absolute;
+            inset: -1px;
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            z-index: -1;
+            border-radius: inherit;
+            opacity: 0.3;
+            transition: opacity 0.3s ease;
+        }
+
+        .neon-border:hover::after { opacity: 1; }
+
+        .shimmer {
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.05), transparent);
+            background-size: 200% 100%;
+            animation: shimmer 3s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+        }
+
+        .gradient-text {
+            background: linear-gradient(to right, #00e1ff, #0072ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .float { animation: float 6s ease-in-out infinite; }
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
         }
 
         /* Custom Scrollbar */
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: #000; }
-        ::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; border: 2px solid #000; }
-        ::-webkit-scrollbar-thumb:hover { background: var(--zudo-cyan); }
-
-        /* Typography Utilities */
-        .font-display { font-family: var(--font-display); }
-        .font-mono { font-family: var(--font-mono); }
-        
-        .text-gradient {
-            background: linear-gradient(135deg, #ffffff 0%, var(--zudo-cyan) 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        /* Background Effects */
-        .grid-bg {
-            position: fixed;
-            top: 0; left: 0; width: 100vw; height: 100vh;
-            background-image: 
-                linear-gradient(to right, rgba(255,255,255,0.02) 1px, transparent 1px),
-                linear-gradient(to bottom, rgba(255,255,255,0.02) 1px, transparent 1px);
-            background-size: 50px 50px;
-            z-index: -2;
-            pointer-events: none;
-        }
-
-        .glow-orb-1 {
-            position: fixed; top: -20%; left: -10%;
-            width: 70vw; height: 70vw;
-            background: radial-gradient(circle, var(--zudo-cyan-glow) 0%, transparent 60%);
-            filter: blur(100px); z-index: -1; pointer-events: none;
-        }
-
-        .glow-orb-2 {
-            position: fixed; bottom: -20%; right: -10%;
-            width: 70vw; height: 70vw;
-            background: radial-gradient(circle, var(--zudo-blue-glow) 0%, transparent 60%);
-            filter: blur(100px); z-index: -1; pointer-events: none;
-        }
-
-        /* Components */
-        .glass-panel {
-            background: var(--bg-glass);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid var(--border-light);
-            transition: all 0.3s ease;
-        }
-        
-        .glass-panel:hover {
-            border-color: var(--border-focus);
-            background: rgba(255, 255, 255, 0.04);
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, var(--zudo-cyan) 0%, var(--zudo-blue) 100%);
-            color: #000;
-            font-weight: 800;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            position: relative;
-            overflow: hidden;
-            box-shadow: 0 0 20px rgba(0, 242, 255, 0.2);
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 30px rgba(0, 242, 255, 0.4);
-            filter: brightness(1.1);
-        }
-
-        .btn-primary:active {
-            transform: translateY(1px);
-        }
-
-        /* Animations */
-        @keyframes float {
-            0% { transform: translateY(0px); }
-            50% { transform: translateY(-20px); }
-            100% { transform: translateY(0px); }
-        }
-        .animate-float { animation: float 6s ease-in-out infinite; }
-
-        @keyframes pulse-slow {
-            0% { opacity: 0.5; }
-            50% { opacity: 1; }
-            100% { opacity: 0.5; }
-        }
-        .animate-pulse-slow { animation: pulse-slow 4s ease-in-out infinite; }
-
-        @keyframes slideUp {
-            from { opacity: 0; transform: translateY(40px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .slide-up { animation: slideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-
-        /* Terminals */
-        .terminal-container {
-            background: #050505;
-            border: 1px solid #222;
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-        }
-        
-        .terminal-header {
-            background: #111;
-            padding: 12px 16px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            border-bottom: 1px solid #222;
-        }
-
-        .mac-btn { width: 12px; height: 12px; border-radius: 50%; }
-        .mac-close { background: #ff5f56; }
-        .mac-min { background: #ffbd2e; }
-        .mac-max { background: #27c93f; }
-
-        /* Forms & Inputs */
-        .zudo-input {
-            width: 100%;
-            background: rgba(0,0,0,0.5);
-            border: 1px solid var(--border-light);
-            color: white;
-            padding: 1rem 1.5rem;
-            border-radius: 12px;
-            outline: none;
-            transition: all 0.3s;
-        }
-        .zudo-input:focus {
-            border-color: var(--zudo-cyan);
-            box-shadow: 0 0 15px rgba(0, 242, 255, 0.1);
-        }
-
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #050505; }
+        ::-webkit-scrollbar-thumb { background: #1a1a1a; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--primary); }
     </style>
 </head>
 <body>
-    <div id="root"></div>
+    <div class="mesh-bg"></div>
 
-    <script type="text/babel">
-        const { useState, useEffect, useRef, useMemo } = React;
-
-        /* --- CONFIGURATION & CONSTANTS --- */
-        const APP_CONFIG = {
-            brandName: "Zudo",
-            fullName: "Zudo Launcher",
-            version: "1.0.2",
-            buildNumber: "8472-STABLE",
-            releaseDate: "May 16, 2026",
-            logoPath: "image_a0305c.png",
-            installerPath: "Zudo Launcher Setup 1.0.2.exe",
-            author: "Lakshit Rajput / Aetherion",
-            githubUser: "lakshitrajput018-oss"
-        };
-
-        /* --- MASSIVE DATA MATRICES --- */
-        const PERFORMANCE_METRICS = [
-            { label: "Cold Start Time", vanilla: "14.2s", zudo: "3.8s", improvement: "373%" },
-            { label: "Avg FPS (1.8.9)", vanilla: "420", zudo: "950+", improvement: "226%" },
-            { label: "RAM Usage (Idle)", vanilla: "1.2GB", zudo: "450MB", improvement: "266%" },
-            { label: "Input Latency", vanilla: "14ms", zudo: "2ms", improvement: "700%" },
-            { label: "Server Ping Auth", vanilla: "120ms", zudo: "45ms", improvement: "266%" },
-            { label: "Chunk Render Speed", vanilla: "Standard", zudo: "Multi-Threaded", improvement: "Async" },
-            { label: "Memory GC Pauses", vanilla: "Frequent", zudo: "Zero-Stall", improvement: "Optimal" },
-            { label: "Asset Loading", vanilla: "Sequential", zudo: "Parallel", improvement: "4x Faster" }
-        ];
-
-        const CHANGELOG_DATA = [
-            {
-                version: "1.0.2",
-                date: "May 2026",
-                type: "Stable Release",
-                changes: [
-                    "Implemented direct download linking to Zudo Launcher Setup 1.0.2.exe",
-                    "Fixed image pathing for image_a0305c.png on GitHub Pages",
-                    "Optimized React render cycles for the main dashboard",
-                    "Resolved an issue with Microsoft OAuth2 token refreshing",
-                    "Added support for 1.20.4 native asset downloading",
-                    "Reduced background CPU usage by an additional 14%"
-                ]
-            },
-            {
-                version: "1.0.1",
-                date: "April 2026",
-                type: "Hotfix",
-                changes: [
-                    "Patched a memory leak in the skin rendering pipeline",
-                    "Updated bundled Java runtime to OpenJDK 21.0.2",
-                    "Added the Aetherion Dark Theme as the default UI",
-                    "Fixed crash when allocating more than 8GB of RAM"
-                ]
-            },
-            {
-                version: "1.0.0",
-                date: "March 2026",
-                type: "Initial Release",
-                changes: [
-                    "Complete rewrite of the core launch sequence",
-                    "Introduced multi-threaded downloading engine",
-                    "Added native support for Forge, Fabric, and Quilt",
-                    "Implemented the initial Zudo UI design language"
-                ]
-            }
-        ];
-
-        const WIKI_PAGES = [
-            {
-                id: "installation",
-                title: "Installation Guide",
-                content: "To install Zudo Launcher, download the executable file. Run the installer and follow the on-screen prompts. Zudo will automatically detect existing Minecraft installations and import your accounts securely using Microsoft's official OAuth mechanism. We do not store your passwords."
-            },
-            {
-                id: "optimization",
-                title: "Maximizing FPS",
-                content: "Zudo is pre-configured for maximum performance out of the box. However, for extreme competitive play, navigate to Settings > Java Arguments. Enable 'Aggressive GC' and set your RAM allocation to exactly half of your system's total memory. Do not exceed 8GB unless you are using 512x resource packs."
-            },
-            {
-                id: "troubleshooting",
-                title: "Common Issues",
-                content: "If the launcher shows a blank screen, ensure your antivirus is not blocking the connection to our asset servers. If the game crashes on launch, verify that your graphics drivers are up to date and that you have not allocated more RAM than physically available on your system."
-            },
-            {
-                id: "mods",
-                title: "Mod Management",
-                content: "Zudo features a built-in mod manager. Simply drag and drop your .jar files into the specific instance folder. Zudo will automatically check for dependency conflicts and notify you if a mod requires an updated version of Fabric API or Forge."
-            },
-            {
-                id: "themes",
-                title: "Custom Themes",
-                content: "The Aetherion engine allows for complete UI customization. You can change accent colors, background images, and blur effects in the Appearance tab. Custom CSS support is planned for version 1.1.0."
-            }
-        ];
-
-        const FAQ_DATA = [
-            { q: "Is Zudo Launcher safe?", a: "Yes. Zudo uses official Microsoft authentication. Your credentials are sent directly to Microsoft; we never see them. The launcher code is scanned regularly for vulnerabilities." },
-            { q: "Do I need to buy Minecraft?", a: "Yes. Zudo is a premium launcher. You must own a legitimate copy of Minecraft Java Edition tied to a Microsoft account to play." },
-            { q: "Is this a hacked client?", a: "No. Zudo is a vanilla-enhancing launcher. It provides FPS boosts and quality-of-life features, but does not provide unfair advantages like X-Ray or KillAura. It is completely safe to use on servers like Hypixel." },
-            { q: "Does it support Mac and Linux?", a: "Currently, the provided installer (Zudo Launcher Setup 1.0.2.exe) is for Windows only. macOS and Linux builds are in development." },
-            { q: "How do I report a bug?", a: "You can report bugs on our official GitHub repository issue tracker or join our Discord server." },
-            { q: "Will I get banned on Hypixel?", a: "No. Zudo complies with all major server rules regarding client modifications." },
-            { q: "Can I use OptiFine?", a: "Yes, though we highly recommend using Sodium/Iris (which we can auto-install) as it provides significantly better performance on modern hardware." },
-            { q: "How do I uninstall?", a: "Simply use the Windows 'Add or Remove Programs' feature, search for Zudo Launcher, and click uninstall. Your world saves will not be deleted." }
-        ];
-
-        const LEGAL_TEXT = `
-            TERMS OF SERVICE AND END USER LICENSE AGREEMENT
+    <nav class="fixed top-0 w-full z-[100] transition-all duration-500" id="navbar">
+        <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+            <div class="flex items-center space-x-4 group cursor-pointer">
+                <div class="w-12 h-12 transition-transform duration-500 group-hover:scale-110 group-hover:rotate-3">
+                    <img src="logo.png" alt="Zudo Logo" class="w-full h-full object-contain filter drop-shadow-[0_0_8px_rgba(0,225,255,0.5)]">
+                </div>
+                <div class="flex flex-col">
+                    <span class="text-xl font-heading font-black tracking-tighter leading-none">ZUDO</span>
+                    <span class="text-[10px] text-[#00e1ff] uppercase tracking-[0.3em] font-bold opacity-80">Launcher</span>
+                </div>
+            </div>
             
-            Last Updated: May 1, 2026
+            <div class="hidden md:flex items-center space-x-10 text-sm font-semibold tracking-wide">
+                <a href="#features" class="hover:text-[#00e1ff] transition-colors">Performance</a>
+                <a href="#skins" class="hover:text-[#00e1ff] transition-colors">Skins Update</a>
+                <a href="#download" class="px-7 py-2.5 bg-white text-black rounded-full hover:bg-[#00e1ff] hover:shadow-[0_0_20px_rgba(0,225,255,0.4)] transition-all">Download</a>
+            </div>
+                <span class="text-2xl font-heading font-bold tracking-tighter">ZUDO<span class="text-xs text-[#00ff88] ml-1 uppercase tracking-widest opacity-50">Core</span></span>
+            </div>
             
-            1. ACCEPTANCE OF TERMS
-            By downloading, installing, or using the Zudo Launcher ("Software"), you agree to be bound by these Terms of Service. If you do not agree to these terms, do not install or use the Software.
-            
-            2. LICENSE GRANT
-            Subject to your compliance with these Terms, Zudo ("Licensor") grants you a personal, non-exclusive, non-transferable, limited license to install and use the Software solely for your personal, non-commercial use.
-            
-            3. RESTRICTIONS
-            You may not:
-            a) Reverse engineer, decompile, or disassemble the Software.
-            b) Modify, translate, or create derivative works based on the Software.
-            c) Rent, lease, distribute, or otherwise transfer rights to the Software.
-            d) Use the Software to facilitate copyright infringement or bypass DRM.
-            
-            4. MOJANG/MICROSOFT AFFILIATION
-            Zudo Launcher is an independent project. NOT AN OFFICIAL MINECRAFT PRODUCT. NOT APPROVED BY OR ASSOCIATED WITH MOJANG OR MICROSOFT. "Minecraft" is a trademark of Mojang Synergies AB.
-            
-            5. DATA AND PRIVACY
-            The Software requires authentication with Microsoft servers. The Software does not intercept, log, or transmit your Microsoft account credentials to Licensor. Telemetry data (such as crash logs and hardware specifications) may be collected anonymously to improve the Software, subject to your opt-in consent.
-            
-            6. DISCLAIMER OF WARRANTIES
-            THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-            
-            7. LIMITATION OF LIABILITY
-            IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-            
-            8. TERMINATION
-            This License is effective until terminated. Your rights under this License will terminate automatically without notice from the Licensor if you fail to comply with any term(s) of this License.
-            
-            9. GOVERNING LAW
-            These Terms shall be governed by and construed in accordance with standard international software licensing laws, without regard to its conflict of law provisions.
-            
-            10. CONTACT
-            For legal inquiries, please open an issue on the official GitHub repository.
-        `;
+            <div class="hidden md:flex items-center space-x-10 text-sm font-semibold tracking-wide">
+                <a href="#features" class="hover:text-[#00ff88] transition-colors">Performance</a>
+                <a href="#skins" class="hover:text-[#00ff88] transition-colors">Skins</a>
+                <a href="#download" class="px-6 py-2.5 bg-white text-black rounded-full hover:bg-[#00ff88] hover:scale-105 transition-all">Download</a>
+            </div>
 
-        /* --- CUSTOM SVG ICONS (INLINE TO MAXIMIZE CODE LENGTH) --- */
-        const SvgIcons = {
-            Rocket: ({size=24, className=""}) => (
-                <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-                    <path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"></path>
-                    <path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"></path>
-                    <path d="M9 12H4s.5-1 1-4c1.5 0 3 0 3 0l1 4z"></path>
-                    <path d="M12 15v5s1-.5 4-1c0-1.5 0-3 0-3l-4-1z"></path>
-                </svg>
-            ),
-            Zap: ({size=24, className=""}) => (
-                <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-                    <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
-                </svg>
-            ),
-            Shield: ({size=24, className=""}) => (
-                <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
-                </svg>
-            ),
-            Cpu: ({size=24, className=""}) => (
-                <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-                    <rect x="4" y="4" width="16" height="16" rx="2" ry="2"></rect>
-                    <rect x="9" y="9" width="6" height="6"></rect>
-                    <line x1="9" y1="1" x2="9" y2="4"></line>
-                    <line x1="15" y1="1" x2="15" y2="4"></line>
-                    <line x1="9" y1="20" x2="9" y2="23"></line>
-                    <line x1="15" y1="20" x2="15" y2="23"></line>
-                    <line x1="20" y1="9" x2="23" y2="9"></line>
-                    <line x1="20" y1="14" x2="23" y2="14"></line>
-                    <line x1="1" y1="9" x2="4" y2="9"></line>
-                    <line x1="1" y1="14" x2="4" y2="14"></line>
-                </svg>
-            ),
-            Download: ({size=24, className=""}) => (
-                <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                    <polyline points="7 10 12 15 17 10"></polyline>
-                    <line x1="12" y1="15" x2="12" y2="3"></line>
-                </svg>
-            ),
-            Terminal: ({size=24, className=""}) => (
-                <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-                    <polyline points="4 17 10 11 4 5"></polyline>
-                    <line x1="12" y1="19" x2="20" y2="19"></line>
-                </svg>
-            ),
-            Book: ({size=24, className=""}) => (
-                <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-                    <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
-                    <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
-                </svg>
-            ),
-            ChevronDown: ({size=24, className=""}) => (
-                <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-                    <polyline points="6 9 12 15 18 9"></polyline>
-                </svg>
-            ),
-            ChevronUp: ({size=24, className=""}) => (
-                <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-                    <polyline points="18 15 12 9 6 15"></polyline>
-                </svg>
-            )
-        };
+            <button class="md:hidden text-2xl" onclick="toggleMenu()">
+                <i class="fa-solid fa-bars-staggered"></i>
+            </button>
+        </div>
+    </nav>
 
-        /* --- COMPONENTS --- */
+    <section class="relative min-h-screen flex flex-col items-center justify-center pt-32 px-6 overflow-hidden">
+        <div class="absolute top-1/4 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-[#00e1ff]/5 blur-[150px] rounded-full pointer-events-none"></div>
+        
+        <div class="text-center z-10 max-w-5xl mx-auto">
+            <div class="inline-flex items-center px-4 py-2 rounded-full glass-panel border border-white/5 text-[10px] font-black tracking-[0.25em] uppercase text-[#00e1ff] mb-10">
+                <span class="w-1.5 h-1.5 rounded-full bg-[#00e1ff] mr-3 animate-ping"></span> Enterprise Grade Launcher
+            </div>
+            
+            <h1 class="text-6xl md:text-8xl font-heading font-bold leading-[0.9] mb-8 tracking-tighter">
+                Unleash the <br>
+                <span class="gradient-text">Absolute Core.</span>
+            </h1>
+            
+            <p class="max-w-xl mx-auto text-lg text-gray-400 mb-12 font-medium leading-relaxed opacity-80">
+                The fastest way to experience Minecraft. Zero-latency injection, optimized memory buffers, and a design built for the elite.
+            </p>
 
-        const Navbar = ({ activeTab, setActiveTab }) => {
-            const [isScrolled, setIsScrolled] = useState(false);
+            <div class="flex flex-col sm:flex-row items-center justify-center gap-6">
+                <a href="#download" class="group relative px-12 py-5 bg-[#00e1ff] text-black font-black rounded-2xl overflow-hidden hover:scale-105 transition-all shadow-[0_0_50px_rgba(0,225,255,0.25)]">
+                    <span class="relative z-10 flex items-center gap-3">
+                        <i class="fa-solid fa-play text-xs"></i> LAUNCH NOW
+                    </span>
+                </a>
+                <a href="#skins" class="px-12 py-5 glass-panel rounded-2xl border border-white/10 hover:bg-white/5 transition-all font-bold text-gray-300">
+                    Read Update Logs
+                </a>
+            </div>
+        </div>
 
-            useEffect(() => {
-                const handleScroll = () => {
-                    setIsScrolled(window.scrollY > 50);
-                };
-                window.addEventListener('scroll', handleScroll);
-                return () => window.removeEventListener('scroll', handleScroll);
-            }, []);
+        <!-- Floating Mockup -->
+        <div class="mt-28 w-full max-w-6xl relative float group">
+            <div class="rounded-[2.5rem] overflow-hidden border border-white/10 glass-panel shadow-2xl relative">
+                <div class="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent pointer-events-none"></div>
+                <img src="https://placehold.co/1200x700/020203/00e1ff?text=ZUDO+V2.4+DASHBOARD" alt="Launcher Interface" class="w-full opacity-90 grayscale-[0.2] group-hover:grayscale-0 transition-all duration-700">
+            </div>
+            
+            <!-- Performance Badges -->
+            <div class="absolute -top-12 -left-8 glass-panel p-6 rounded-3xl border border-[#00e1ff]/20 hidden lg:block animate-pulse">
+                <div class="flex items-center gap-4">
+                    <div class="text-3xl text-[#00e1ff] font-heading font-black">0.4s</div>
+                    <div class="text-[9px] uppercase font-bold tracking-widest text-gray-500 leading-tight">Injection<br>Speed</div>
+                </div>
+            </div>
+            <div class="absolute -bottom-10 -right-10 glass-panel p-6 rounded-3xl border border-[#0072ff]/20 hidden lg:block">
+                <div class="flex items-center gap-4 text-right">
+                    <div class="text-[9px] uppercase font-bold tracking-widest text-gray-500 leading-tight">RAM<br>Optimized</div>
+                    <div class="text-3xl text-[#0072ff] font-heading font-black">99.9%</div>
+                </div>
+            </div>
+        </div>
+    </section>
 
-            const navLinks = [
-                { id: 'home', label: 'Home' },
-                { id: 'features', label: 'Features' },
-                { id: 'performance', label: 'Performance' },
-                { id: 'wiki', label: 'Wiki' },
-                { id: 'faq', label: 'FAQ' }
-            ];
+    <section id="skins" class="py-40 px-6 relative">
+        <div class="max-w-7xl mx-auto">
+            <div class="grid lg:grid-cols-2 gap-20 items-center">
+                <div>
+                    <div class="flex items-center gap-3 mb-6">
+                        <span class="h-[1px] w-12 bg-[#00e1ff]"></span>
+                        <span class="text-[#00e1ff] font-black tracking-[0.3em] uppercase text-[10px]">Development Log</span>
+                    </div>
+                    <h2 class="text-5xl md:text-6xl font-heading font-bold mb-10 tracking-tighter leading-tight">Skins & Capes<br><span class="opacity-30">Status Update</span></h2>
+                    
+                    <div class="space-y-8">
+                        <div class="glass-panel p-8 rounded-[2rem] border-l-4 border-[#00e1ff] bg-gradient-to-r from-[#00e1ff]/5 to-transparent">
+                            <h3 class="text-xl font-black mb-4 flex items-center gap-3">
+                                <i class="fa-solid fa-code-branch text-[#00e1ff]"></i> The Roadmap
+                            </h3>
+                            <p class="text-gray-400 leading-relaxed mb-6 font-medium">
+                                We are engineering a native, encrypted skin-injection system for offline sessions. This is a core priority for the upcoming major patch.
+                            </p>
+                            <div class="flex items-center gap-4">
+                                <span class="px-3 py-1 bg-[#00e1ff]/10 text-[#00e1ff] rounded-lg text-[10px] font-black uppercase">In Sprint</span>
+                                <span class="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Target: v3.0 Alpha</span>
+                            </div>
+                        </div>
 
-            return (
-                <nav className={`fixed top-0 w-full z-50 transition-all duration-300 ${isScrolled ? 'py-4 glass-panel border-b border-white/10' : 'py-6 bg-transparent'}`}>
-                    <div className="max-w-7xl mx-auto px-6 flex justify-between items-center">
-                        {/* Logo */}
-                        <div 
-                            className="flex items-center gap-4 cursor-pointer"
-                            onClick={() => { setActiveTab('home'); window.scrollTo(0,0); }}
-                        >
-                            <img 
-                                src={APP_CONFIG.logoPath} 
-                                alt="Zudo Logo" 
-                                className="w-12 h-12 rounded-xl object-cover shadow-[0_0_15px_rgba(0,242,255,0.3)]"
-                                onError={(e) => {
-                                    e.target.onerror = null; 
-                                    e.target.style.display = 'none';
-                                    e.target.nextSibling.style.display = 'block';
-                                }}
-                            />
-                            <div className="hidden w-12 h-12 bg-gray-800 rounded-xl flex items-center justify-center font-bold text-xl">Z</div>
+                        <div class="p-8 rounded-3xl glass-panel border border-white/5 italic opacity-80">
+                            <p class="text-sm font-medium text-gray-400">
+                                "Native skin support for offline accounts is currently being optimized. Until deployment, Zudo remains compatible with industry-standard injectors."
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Workaround Module -->
+                <div class="relative group">
+                    <div class="absolute -inset-4 bg-[#00e1ff]/10 blur-3xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
+                    <div class="relative glass-panel rounded-[3rem] p-10 md:p-14 border border-white/10 overflow-hidden">
+                        <div class="flex items-center justify-between mb-12">
                             <div>
-                                <h1 className="font-display font-black text-2xl tracking-tight leading-none uppercase">{APP_CONFIG.brandName}</h1>
-                                <span className="text-[10px] text-gray-400 font-mono tracking-widest uppercase">Launcher</span>
+                                <h3 class="text-2xl font-black font-heading">CustomSkinLoader</h3>
+                                <p class="text-[10px] text-gray-500 uppercase font-bold tracking-widest mt-1">Temporary Offline Patch</p>
+                            </div>
+                            <div class="w-14 h-14 bg-white/5 rounded-2xl flex items-center justify-center border border-white/10">
+                                <i class="fa-solid fa-wand-magic-sparkles text-[#00e1ff] text-xl"></i>
                             </div>
                         </div>
 
-                        {/* Desktop Links */}
-                        <div className="hidden lg:flex items-center gap-8">
-                            {navLinks.map(link => (
-                                <button
-                                    key={link.id}
-                                    onClick={() => { setActiveTab(link.id); window.scrollTo(0,0); }}
-                                    className={`text-sm font-bold uppercase tracking-wider transition-colors ${activeTab === link.id ? 'text-zudo-cyan' : 'text-gray-400 hover:text-white'}`}
-                                >
-                                    {link.label}
-                                </button>
-                            ))}
+                        <div class="space-y-8 mb-12">
+                            <div class="flex gap-6 items-start">
+                                <div class="flex-shrink-0 w-8 h-8 rounded-lg bg-[#00e1ff] text-black flex items-center justify-center font-black text-sm">1</div>
+                                <div>
+                                    <h4 class="font-bold text-white mb-1">Source Retrieval</h4>
+                                    <p class="text-xs text-gray-400 leading-relaxed">Download the CSL version for Forge/Fabric/Quilt corresponding to your game version.</p>
+                                </div>
+                            </div>
+                            <div class="flex gap-6 items-start">
+                                <div class="flex-shrink-0 w-8 h-8 rounded-lg bg-white/10 text-white flex items-center justify-center font-black text-sm">2</div>
+                                <div>
+                                    <h4 class="font-bold text-white mb-1">System Injection</h4>
+                                    <p class="text-xs text-gray-400 leading-relaxed">Move the <code class="text-[#00e1ff] bg-[#00e1ff]/5 px-1.5 py-0.5 rounded">.jar</code> file into your client's <code class="text-[#00e1ff]">/mods</code> directory.</p>
+                                </div>
+                            </div>
+                            <div class="flex gap-6 items-start">
+                                <div class="flex-shrink-0 w-8 h-8 rounded-lg bg-white/10 text-white flex items-center justify-center font-black text-sm">3</div>
+                                <div>
+                                    <h4 class="font-bold text-white mb-1">Initialization</h4>
+                                    <p class="text-xs text-gray-400 leading-relaxed">Launch Zudo to generate local config buffers. Place skin at the path below.</p>
+                                </div>
+                            </div>
                         </div>
 
-                        {/* Download CTA */}
-                        <div>
-                            <button 
-                                onClick={() => { setActiveTab('download'); window.scrollTo(0,0); }}
-                                className="btn-primary px-8 py-3 rounded-full text-sm flex items-center gap-2"
-                            >
-                                <SvgIcons.Download size={16} />
-                                <span>Get {APP_CONFIG.brandName}</span>
+                        <!-- Terminal Block -->
+                        <div class="bg-black/80 rounded-2xl p-7 border border-white/5 font-mono text-[11px] group/term">
+                            <div class="flex items-center gap-1.5 mb-5">
+                                <div class="w-2.5 h-2.5 rounded-full bg-[#ff5f56]"></div>
+                                <div class="w-2.5 h-2.5 rounded-full bg-[#ffbd2e]"></div>
+                                <div class="w-2.5 h-2.5 rounded-full bg-[#27c93f]"></div>
+                                <span class="ml-2 text-gray-600 uppercase font-bold text-[9px] tracking-widest">Local-Injection-Path</span>
+                            </div>
+                            <code class="text-gray-300 block break-all leading-relaxed">
+                                .minecraft/CustomSkinLoader/LocalSkin/skins/<span class="text-[#00e1ff] animate-pulse">YourUsername.png</span>
+                            </code>
+                            <button onclick="copyPath()" class="mt-6 flex items-center gap-2 text-[#00e1ff] hover:text-white transition-colors uppercase font-black text-[9px] tracking-widest">
+                                <i class="fa-solid fa-copy"></i> Copy Path to Clipboard
                             </button>
                         </div>
-                    </div>
-                </nav>
-            );
-        };
-
-        const HeroSection = ({ setActiveTab }) => {
-            return (
-                <section className="relative min-h-[100vh] flex flex-col items-center justify-center pt-32 pb-20 px-6 overflow-hidden">
-                    
-                    <div className="z-10 text-center max-w-5xl mx-auto slide-up">
-                        {/* Version Badge */}
-                        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass-panel border-zudo-cyan/30 mb-8">
-                            <span className="relative flex h-3 w-3">
-                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-zudo-cyan opacity-75"></span>
-                                <span className="relative inline-flex rounded-full h-3 w-3 bg-zudo-cyan"></span>
-                            </span>
-                            <span className="text-xs font-bold text-zudo-cyan uppercase tracking-widest font-mono">
-                                Stable Build {APP_CONFIG.version} Available
-                            </span>
-                        </div>
-
-                        {/* Main Headline */}
-                        <h1 className="font-display text-6xl md:text-8xl lg:text-[140px] font-black leading-[0.9] tracking-tighter mb-8 uppercase">
-                            Push The <br/>
-                            <span className="text-gradient">Limits.</span>
-                        </h1>
-
-                        {/* Subheadline */}
-                        <p className="text-lg md:text-2xl text-gray-400 mb-12 max-w-3xl mx-auto font-light leading-relaxed">
-                            The ultimate, performance-driven Minecraft client. Engineered from the ground up for competitive players who demand <strong className="text-white">zero latency</strong> and <strong className="text-white">maximum framerates</strong>.
-                        </p>
-
-                        {/* Action Buttons */}
-                        <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
-                            <button 
-                                onClick={() => setActiveTab('download')}
-                                className="btn-primary px-12 py-5 rounded-2xl text-xl w-full sm:w-auto flex justify-center items-center gap-3"
-                            >
-                                <SvgIcons.Download size={24} />
-                                Download Now
-                            </button>
-                            <button 
-                                onClick={() => setActiveTab('features')}
-                                className="glass-panel px-12 py-5 rounded-2xl text-xl font-bold w-full sm:w-auto hover:bg-white/10"
-                            >
-                                Explore Features
-                            </button>
-                        </div>
-                    </div>
-
-                    {/* Decorative Graphic */}
-                    <div className="mt-24 w-full max-w-4xl relative z-10 animate-float slide-up" style={{animationDelay: '0.2s'}}>
-                        <div className="absolute inset-0 bg-zudo-cyan/20 blur-[100px] rounded-full"></div>
-                        <img 
-                            src={APP_CONFIG.logoPath} 
-                            alt="Zudo Graphic" 
-                            className="relative w-48 h-48 md:w-64 md:h-64 mx-auto rounded-[3rem] shadow-2xl object-cover"
-                            onError={(e) => e.target.style.display='none'}
-                        />
-                    </div>
-                </section>
-            );
-        };
-
-        const FeatureSection = () => {
-            const features = [
-                { title: "Native Architecture", desc: "Written with low-level integrations that bypass standard Java overhead, resulting in instant startup times.", icon: <SvgIcons.Cpu size={32} /> },
-                { title: "Hyper-Threaded", desc: "Our custom rendering pipeline utilizes all available CPU cores simultaneously, eliminating chunk-loading stutter.", icon: <SvgIcons.Zap size={32} /> },
-                { title: "Secure Vault", desc: "OAuth2 compliant. Your Microsoft tokens are encrypted locally and never transmitted to our servers.", icon: <SvgIcons.Shield size={32} /> },
-                { title: "Mod Ecosystem", desc: "One-click install for popular optimization mods like Sodium, Lithium, and Iris shaders.", icon: <SvgIcons.Rocket size={32} /> }
-            ];
-
-            return (
-                <section className="py-32 px-6 max-w-7xl mx-auto slide-up">
-                    <div className="text-center mb-20">
-                        <h2 className="font-display text-5xl md:text-7xl font-black mb-6 uppercase">Engineered for <span className="text-zudo-cyan">Speed</span></h2>
-                        <p className="text-gray-400 text-xl max-w-2xl mx-auto">Every line of code in Zudo is scrutinized for performance impact. We don't just launch the game; we optimize its environment.</p>
-                    </div>
-
-                    <div className="grid md:grid-cols-2 gap-8">
-                        {features.map((feature, idx) => (
-                            <div key={idx} className="glass-panel p-10 rounded-[2rem] hover:-translate-y-2 transition-transform duration-300">
-                                <div className="w-16 h-16 rounded-2xl bg-zudo-cyan/10 flex items-center justify-center text-zudo-cyan mb-8 border border-zudo-cyan/20">
-                                    {feature.icon}
-                                </div>
-                                <h3 className="text-2xl font-bold mb-4 font-display">{feature.title}</h3>
-                                <p className="text-gray-400 leading-relaxed">{feature.desc}</p>
-                            </div>
-                        ))}
-                    </div>
-                </section>
-            );
-        };
-
-        const PerformanceSection = () => {
-            return (
-                <section className="py-32 px-6 max-w-7xl mx-auto slide-up">
-                    <div className="mb-20">
-                        <h2 className="font-display text-5xl md:text-7xl font-black mb-6 uppercase">The <span className="text-zudo-blue">Metrics</span></h2>
-                        <p className="text-gray-400 text-xl max-w-2xl">Numbers don't lie. See how Zudo compares to standard launch environments.</p>
-                    </div>
-
-                    <div className="glass-panel rounded-[2rem] overflow-hidden">
-                        <div className="overflow-x-auto">
-                            <table className="w-full text-left border-collapse">
-                                <thead>
-                                    <tr className="bg-black/40 text-xs uppercase tracking-widest text-gray-400 border-b border-white/10">
-                                        <th className="p-6 font-bold">Metric</th>
-                                        <th className="p-6 font-bold text-gray-500">Vanilla</th>
-                                        <th className="p-6 font-bold text-zudo-cyan">Zudo Engine</th>
-                                        <th className="p-6 font-bold text-green-400">Delta</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {PERFORMANCE_METRICS.map((metric, idx) => (
-                                        <tr key={idx} className="border-b border-white/5 hover:bg-white/5 transition-colors">
-                                            <td className="p-6 font-bold">{metric.label}</td>
-                                            <td className="p-6 font-mono text-gray-500">{metric.vanilla}</td>
-                                            <td className="p-6 font-mono text-white font-bold">{metric.zudo}</td>
-                                            <td className="p-6 font-mono text-green-400 text-sm">+{metric.improvement}</td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-
-                    {/* Simulated Terminal */}
-                    <div className="mt-16 terminal-container max-w-4xl mx-auto">
-                        <div className="terminal-header">
-                            <div className="mac-btn mac-close"></div>
-                            <div className="mac-btn mac-min"></div>
-                            <div className="mac-btn mac-max"></div>
-                            <div className="ml-4 text-xs font-mono text-gray-500 text-center flex-1">zudo-core-engine ~ bash</div>
-                        </div>
-                        <div className="p-6 font-mono text-sm h-64 overflow-y-auto">
-                            <div className="text-zudo-cyan mb-2">$ ./zudo --diagnostics --run</div>
-                            <div className="text-gray-400 mb-1">[INFO] Initializing JVM arguments...</div>
-                            <div className="text-gray-400 mb-1">[INFO] Allocating memory heap (4096MB)...</div>
-                            <div className="text-green-400 mb-1">[SUCCESS] Memory allocation optimal.</div>
-                            <div className="text-gray-400 mb-1">[INFO] Bypassing standard asset index...</div>
-                            <div className="text-gray-400 mb-1">[INFO] Loading Aetherion optimizations...</div>
-                            <div className="text-green-400 mb-4">[SUCCESS] All hooks injected securely.</div>
-                            <div className="text-white animate-pulse">Waiting for game window...</div>
-                        </div>
-                    </div>
-                </section>
-            );
-        };
-
-        const WikiSection = () => {
-            const [activeArticle, setActiveArticle] = useState(WIKI_PAGES[0].id);
-            const currentArticle = WIKI_PAGES.find(p => p.id === activeArticle);
-
-            return (
-                <section className="py-32 px-6 max-w-7xl mx-auto slide-up">
-                    <div className="mb-20 text-center">
-                        <h2 className="font-display text-5xl md:text-7xl font-black mb-6 uppercase">Knowledge <span className="text-gradient">Base</span></h2>
-                        <p className="text-gray-400 text-xl">Everything you need to know to master the launcher.</p>
-                    </div>
-
-                    <div className="flex flex-col md:flex-row gap-8">
-                        {/* Sidebar */}
-                        <div className="w-full md:w-1/3 glass-panel rounded-[2rem] p-6 h-fit">
-                            <div className="flex items-center gap-3 mb-6 pb-6 border-b border-white/10 text-gray-400 uppercase text-xs tracking-widest font-bold">
-                                <SvgIcons.Book size={16} />
-                                <span>Categories</span>
-                            </div>
-                            <ul className="space-y-2">
-                                {WIKI_PAGES.map(page => (
-                                    <li key={page.id}>
-                                        <button 
-                                            onClick={() => setActiveArticle(page.id)}
-                                            className={`w-full text-left px-4 py-3 rounded-xl font-bold transition-all ${activeArticle === page.id ? 'bg-zudo-cyan/10 text-zudo-cyan' : 'text-gray-400 hover:bg-white/5 hover:text-white'}`}
-                                        >
-                                            {page.title}
-                                        </button>
-                                    </li>
-                                ))}
-                            </ul>
-                        </div>
-
-                        {/* Content Area */}
-                        <div className="w-full md:w-2/3 glass-panel rounded-[2rem] p-10 min-h-[400px]">
-                            <h3 className="text-4xl font-display font-black mb-8 border-b border-white/10 pb-6">{currentArticle.title}</h3>
-                            <div className="text-gray-300 leading-loose text-lg">
-                                {currentArticle.content}
-                            </div>
-                        </div>
-                    </div>
-                </section>
-            );
-        };
-
-        const FaqSection = () => {
-            const [openIndex, setOpenIndex] = useState(0);
-
-            return (
-                <section className="py-32 px-6 max-w-4xl mx-auto slide-up">
-                    <div className="mb-20 text-center">
-                        <h2 className="font-display text-5xl md:text-7xl font-black mb-6 uppercase">F.A.Q.</h2>
-                        <p className="text-gray-400 text-xl">Common questions answered.</p>
-                    </div>
-
-                    <div className="space-y-4">
-                        {FAQ_DATA.map((faq, index) => (
-                            <div 
-                                key={index} 
-                                className="glass-panel rounded-2xl overflow-hidden cursor-pointer"
-                                onClick={() => setOpenIndex(openIndex === index ? -1 : index)}
-                            >
-                                <div className="p-6 flex justify-between items-center bg-black/20">
-                                    <h4 className="font-bold text-lg">{faq.q}</h4>
-                                    <div className={`text-zudo-cyan transition-transform duration-300 ${openIndex === index ? 'rotate-180' : ''}`}>
-                                        <SvgIcons.ChevronDown size={20} />
-                                    </div>
-                                </div>
-                                <div 
-                                    className={`px-6 text-gray-400 leading-relaxed transition-all duration-300 overflow-hidden ${openIndex === index ? 'py-6 border-t border-white/5 max-h-40' : 'max-h-0 py-0'}`}
-                                >
-                                    {faq.a}
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </section>
-            );
-        };
-
-        const DownloadSection = () => {
-            const handleDownload = () => {
-                // Direct file trigger for GitHub Pages
-                const link = document.createElement('a');
-                link.href = APP_CONFIG.installerPath;
-                link.download = APP_CONFIG.installerPath;
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-            };
-
-            return (
-                <section className="min-h-screen flex items-center justify-center pt-32 pb-20 px-6 slide-up">
-                    <div className="max-w-4xl w-full">
-                        <div className="glass-panel p-12 md:p-20 rounded-[3rem] text-center relative overflow-hidden border-t-4 border-zudo-cyan shadow-[0_20px_100px_rgba(0,242,255,0.1)]">
-                            {/* BG Effect */}
-                            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full bg-zudo-cyan/5 blur-[100px] rounded-full pointer-events-none"></div>
-                            
-                            <div className="relative z-10">
-                                <div className="w-24 h-24 mx-auto bg-zudo-cyan/10 rounded-[2rem] flex items-center justify-center text-zudo-cyan mb-10 border border-zudo-cyan/20">
-                                    <SvgIcons.Download size={48} />
-                                </div>
-                                
-                                <h2 className="font-display text-5xl md:text-7xl font-black mb-6 uppercase">Initiate <span className="text-zudo-cyan">Download</span></h2>
-                                <p className="text-gray-400 text-xl mb-12 font-mono">
-                                    {APP_CONFIG.installerPath} <br/>
-                                    <span className="text-sm mt-2 block opacity-50">Size: ~85MB | OS: Windows 10/11</span>
-                                </p>
-
-                                <button 
-                                    onClick={handleDownload}
-                                    className="btn-primary w-full md:w-auto px-16 py-6 rounded-2xl text-2xl mb-8"
-                                >
-                                    Download Installer
-                                </button>
-                                
-                                <p className="text-xs text-gray-500 uppercase tracking-widest max-w-md mx-auto leading-relaxed">
-                                    By downloading, you agree to our Terms of Service and End User License Agreement. Requires Java (included).
-                                </p>
-                            </div>
-                        </div>
-
-                        {/* Changelog Snapshot */}
-                        <div className="mt-16 glass-panel p-10 rounded-[2rem]">
-                            <h3 className="font-bold uppercase tracking-widest text-gray-400 mb-6 border-b border-white/10 pb-4">Latest Patch Notes: {CHANGELOG_DATA[0].version}</h3>
-                            <ul className="space-y-3">
-                                {CHANGELOG_DATA[0].changes.map((change, i) => (
-                                    <li key={i} className="flex gap-3 text-gray-300">
-                                        <span className="text-zudo-cyan font-bold">+</span> {change}
-                                    </li>
-                                ))}
-                            </ul>
-                        </div>
-                    </div>
-                </section>
-            );
-        };
-
-        const Footer = ({ setActiveTab }) => (
-            <footer className="bg-black/50 border-t border-white/5 pt-20 pb-10 px-6 mt-20">
-                <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-12 mb-16">
-                    <div className="md:col-span-2">
-                        <div className="flex items-center gap-3 mb-6">
-                            <img src={APP_CONFIG.logoPath} alt="Logo" className="w-8 h-8 rounded-lg" onError={(e) => e.target.style.display='none'} />
-                            <span className="font-display font-black text-xl uppercase">{APP_CONFIG.brandName}</span>
-                        </div>
-                        <p className="text-gray-500 text-sm leading-relaxed max-w-md">
-                            Zudo is an advanced launcher designed for the Minecraft community. We prioritize performance, security, and user experience above all else.
-                        </p>
-                    </div>
-                    
-                    <div>
-                        <h4 className="font-bold uppercase tracking-widest text-xs text-gray-400 mb-6">Navigation</h4>
-                        <ul className="space-y-3 text-sm text-gray-500">
-                            <li><button onClick={() => { setActiveTab('home'); window.scrollTo(0,0); }} className="hover:text-zudo-cyan transition-colors">Dashboard</button></li>
-                            <li><button onClick={() => { setActiveTab('features'); window.scrollTo(0,0); }} className="hover:text-zudo-cyan transition-colors">Features</button></li>
-                            <li><button onClick={() => { setActiveTab('download'); window.scrollTo(0,0); }} className="hover:text-zudo-cyan transition-colors">Download</button></li>
-                        </ul>
-                    </div>
-
-                    <div>
-                        <h4 className="font-bold uppercase tracking-widest text-xs text-gray-400 mb-6">Legal</h4>
-                        <ul className="space-y-3 text-sm text-gray-500">
-                            <li><a href="#" className="hover:text-zudo-cyan transition-colors">Privacy Policy</a></li>
-                            <li><a href="#" className="hover:text-zudo-cyan transition-colors">Terms of Service</a></li>
-                            <li><a href="#" className="hover:text-zudo-cyan transition-colors">EULA</a></li>
-                        </ul>
                     </div>
                 </div>
+            </div>
+        </div>
+    </section>
 
-                <div className="max-w-7xl mx-auto border-t border-white/10 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
-                    <p className="text-gray-600 text-xs font-mono">
-                        &copy; {new Date().getFullYear()} {APP_CONFIG.author}. All rights reserved.
-                    </p>
-                    <p className="text-gray-600 text-[10px] uppercase tracking-widest max-w-lg text-center md:text-right">
-                        Not an official Minecraft product. Not approved by or associated with Mojang or Microsoft.
-                    </p>
+    <section id="download" class="py-40 px-6">
+        <div class="max-w-6xl mx-auto glass-panel rounded-[4rem] p-16 md:p-24 text-center border border-[#00e1ff]/10 relative overflow-hidden group">
+            <div class="absolute -top-32 -right-32 w-96 h-96 bg-[#00e1ff]/5 blur-[120px] rounded-full group-hover:scale-125 transition-transform duration-1000"></div>
+            
+            <h2 class="text-5xl md:text-7xl font-heading font-black mb-8 tracking-tighter">Enter the System.</h2>
+            <p class="text-gray-400 mb-16 max-w-2xl mx-auto text-lg leading-relaxed">Experience the highest level of Minecraft client engineering. Fully open-source, community-audited, and performance-first.</p>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <button onclick="triggerDownload('Windows')" class="p-10 glass-panel rounded-[2rem] border border-white/5 hover:border-[#00e1ff]/30 hover:bg-[#00e1ff]/5 transition-all group/btn">
+                    <i class="fa-brands fa-windows text-4xl mb-6 text-[#00e1ff] group-hover/btn:scale-110 transition-transform"></i>
+                    <div class="font-black text-xl mb-1 tracking-tight">Windows</div>
+                    <div class="text-[9px] text-gray-500 uppercase font-black tracking-widest">x64 / arm64</div>
+                </button>
+                <button onclick="triggerDownload('macOS')" class="p-10 glass-panel rounded-[2rem] border border-white/5 hover:border-white/30 hover:bg-white/5 transition-all group/btn">
+                    <i class="fa-brands fa-apple text-4xl mb-6 text-white group-hover/btn:scale-110 transition-transform"></i>
+                    <div class="font-black text-xl mb-1 tracking-tight">macOS</div>
+                    <div class="text-[9px] text-gray-500 uppercase font-black tracking-widest">Apple Silicon / Intel</div>
+                </button>
+                <button onclick="triggerDownload('Linux')" class="p-10 glass-panel rounded-[2rem] border border-white/5 hover:border-[#0072ff]/30 hover:bg-[#0072ff]/5 transition-all group/btn">
+                    <i class="fa-brands fa-linux text-4xl mb-6 text-[#0072ff] group-hover/btn:scale-110 transition-transform"></i>
+                    <div class="font-black text-xl mb-1 tracking-tight">Linux</div>
+                    <div class="text-[9px] text-gray-500 uppercase font-black tracking-widest">AppImage / Deb</div>
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <footer class="py-24 border-t border-white/5 px-6">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-12">
+            <div class="flex flex-col items-center md:items-start">
+                <div class="flex items-center space-x-3 mb-6">
+                    <img src="logo.png" alt="Zudo Logo" class="w-8 h-8 opacity-80">
+                    <span class="font-heading font-black text-2xl tracking-tighter">ZUDO</span>
                 </div>
-            </footer>
-        );
+                <p class="text-[10px] text-gray-600 font-bold uppercase tracking-widest text-center md:text-left leading-relaxed">
+                    © 2024 Zudo Development Labs.<br>
+                    Engineered for high-performance gaming.
+                </p>
+            </div>
+            <div class="flex gap-10">
+                <a href="#" class="text-gray-500 hover:text-[#00e1ff] transition-colors"><i class="fa-brands fa-github text-2xl"></i></a>
+                <a href="#" class="text-gray-500 hover:text-[#00e1ff] transition-colors"><i class="fa-brands fa-discord text-2xl"></i></a>
+                <a href="#" class="text-gray-500 hover:text-[#00e1ff] transition-colors"><i class="fa-brands fa-x-twitter text-2xl"></i></a>
+            </div>
+        </div>
+    </footer>
 
-        /* --- MAIN APPLICATION COMPONENT --- */
-        const App = () => {
-            const [activeTab, setActiveTab] = useState('home');
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed bottom-10 left-1/2 -translate-x-1/2 md:translate-x-0 md:left-auto md:right-10 glass-panel p-5 rounded-2xl border border-[#00ff88]/30 flex items-center gap-4 translate-y-32 opacity-0 transition-all duration-500 z-[200]">
+        <div class="w-12 h-12 rounded-xl bg-[#00ff88] flex items-center justify-center text-black">
+            <i class="fa-solid fa-download text-xl"></i>
+        </div>
+        <div class="text-left">
+            <div class="font-bold text-sm" id="toast-title">Initializing...</div>
+            <div class="text-[10px] text-gray-400 font-bold uppercase tracking-widest" id="toast-msg">Zudo-Installer.exe</div>
+        </div>
+    </div>
 
-            // Render view based on active tab
-            const renderContent = () => {
-                switch(activeTab) {
-                    case 'home':
-                        return <HeroSection setActiveTab={setActiveTab} />;
-                    case 'features':
-                        return <FeatureSection />;
-                    case 'performance':
-                        return <PerformanceSection />;
-                    case 'wiki':
-                        return <WikiSection />;
-                    case 'faq':
-                        return <FaqSection />;
-                    case 'download':
-                        return <DownloadSection />;
-                    default:
-                        return <HeroSection setActiveTab={setActiveTab} />;
+    <script>
+        // Navbar scroll effect
+        window.addEventListener('scroll', () => {
+            const nav = document.getElementById('navbar');
+            if (window.scrollY > 50) {
+                nav.classList.add('glass-panel', 'py-3');
+                nav.classList.remove('py-5');
+            } else {
+                nav.classList.remove('glass-panel', 'py-3');
+                nav.classList.add('py-5');
+            }
+        });
+
+        function copyPath() {
+            const text = ".minecraft/CustomSkinLoader/LocalSkin/skins/YourUsername.png";
+            const dummy = document.createElement("textarea");
+            document.body.appendChild(dummy);
+            dummy.value = text;
+            dummy.select();
+            document.execCommand("copy");
+            document.body.removeChild(dummy);
+            
+            showToast("Copied to Clipboard", "Path structure copied successfully.");
+        }
+
+        function triggerDownload(os) {
+            const file = `Zudo-Launcher-v2.4-${os.toLowerCase()}.msi`;
+            showToast("Download Starting", file);
+        }
+
+        function showToast(title, msg) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toast-title').innerText = title;
+            document.getElementById('toast-msg').innerText = msg;
+            
+            toast.classList.remove('translate-y-32', 'opacity-0');
+            setTimeout(() => {
+                toast.classList.add('translate-y-32', 'opacity-0');
+            }, 4000);
+        }
+
+        // Simple Intersection Observer for scroll animations
+        const revealElements = document.querySelectorAll('section, .glass-panel');
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
                 }
-            };
+            });
+        }, { threshold: 0.1 });
 
-            return (
-                <div className="relative min-h-screen flex flex-col">
-                    {/* Global Background Elements */}
-                    <div className="grid-bg"></div>
-                    <div className="glow-orb-1"></div>
-                    <div className="glow-orb-2"></div>
-                    
-                    {/* App Shell */}
-                    <Navbar activeTab={activeTab} setActiveTab={setActiveTab} />
-                    
-                    <main className="flex-grow relative z-10">
-                        {renderContent()}
-                    </main>
-
-                    <Footer setActiveTab={setActiveTab} />
-                </div>
-            );
-        };
-
-        /* --- RENDER INIT --- */
-        const rootElement = document.getElementById('root');
-        const root = ReactDOM.createRoot(rootElement);
-        root.render(<App />);
+        revealElements.forEach(el => {
+            el.style.opacity = '0';
+            el.style.transform = 'translateY(30px)';
+            el.style.transition = 'all 0.8s cubic-bezier(0.2, 0.8, 0.2, 1)';
+            observer.observe(el);
+        });
     </script>
 </body>
 </html>
