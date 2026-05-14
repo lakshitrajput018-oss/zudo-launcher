@@ -329,26 +329,31 @@
         const DownloadPage = () => {
             const [selectedOS, setSelectedOS] = useState('windows');
             
-            // STEP 1: UPLOAD YOUR FILES TO A HOST (GitHub, MediaFire, Google Drive, or your own server)
-            // STEP 2: PASTE THE DIRECT DOWNLOAD LINKS BELOW
+            // Updated with your setup file name
             const downloadLinks = {
-                windows: "https://your-link-here.com/ZudoLauncher.exe",
-                macos: "https://your-link-here.com/ZudoLauncher.dmg",
-                linux: "https://your-link-here.com/ZudoLauncher.AppImage"
+                windows: "Zudo Launcher Setup 1.0.2.exe",
+                macos: "#",
+                linux: "#"
             };
             
             const platforms = [
-                { id: 'windows', name: 'Windows', icon: 'monitor', ext: '.exe', version: 'v1.0.4' },
-                { id: 'macos', name: 'macOS', icon: 'apple', ext: '.dmg', version: 'v1.0.4' },
-                { id: 'linux', name: 'Linux', icon: 'terminal', ext: '.AppImage', version: 'v1.0.4' }
+                { id: 'windows', name: 'Windows', icon: 'monitor', ext: '.exe', version: 'v1.0.2' },
+                { id: 'macos', name: 'macOS', icon: 'apple', ext: '.dmg', version: 'v1.0.2' },
+                { id: 'linux', name: 'Linux', icon: 'terminal', ext: '.AppImage', version: 'v1.0.2' }
             ];
 
             const handleDownload = (osId) => {
                 const link = downloadLinks[osId];
-                if (link && link !== "https://your-link-here.com/...") {
-                    window.location.href = link;
+                if (link && link !== "#") {
+                    // This will trigger the browser download for the file in the same folder
+                    const anchor = document.createElement('a');
+                    anchor.href = link;
+                    anchor.download = link;
+                    document.body.appendChild(anchor);
+                    anchor.click();
+                    document.body.removeChild(anchor);
                 } else {
-                    alert("Download link not set yet! Please add your URL to the code.");
+                    alert("Download for this platform is coming soon!");
                 }
             };
 
@@ -359,7 +364,7 @@
                             <h1 className="text-5xl md:text-7xl font-black mb-6 tracking-tighter uppercase italic">
                                 Ready for <span className="text-cyan-400">Launch.</span>
                             </h1>
-                            <p className="text-xl text-gray-400 font-medium">Select your platform and get ready for May 16th.</p>
+                            <p className="text-xl text-gray-400 font-medium">Select your platform and get ready to play.</p>
                         </div>
 
                         <div className="grid lg:grid-cols-3 gap-8 mb-20">
@@ -372,11 +377,16 @@
                                     <div className={`w-14 h-14 rounded-2xl flex items-center justify-center mb-8 ${selectedOS === p.id ? 'zudo-accent text-black' : 'bg-white/5 text-white'}`}>
                                         <i data-lucide={p.icon} className="w-8 h-8"></i>
                                     </div>
+                                    <h4 className="text-2xl font-bold mb-2">{p.name}</h4>
+                                    <p className="text-gray-500 mb-8 text-sm font-mono">{p.version} {p.ext}</p>
                                     <button 
-                                        onClick={() => handleDownload(p.id)}
-                                        className={`w-full py-5 rounded-2xl font-black transition-all ${selectedOS === p.id ? 'zudo-accent text-black shadow-[0_10px_30px_rgba(0,242,255,0.3)]' : 'bg-white/5 text-white/40 cursor-not-allowed'}`}
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleDownload(p.id);
+                                        }}
+                                        className={`w-full py-5 rounded-2xl font-black transition-all ${selectedOS === p.id ? 'zudo-accent text-black shadow-[0_10px_30px_rgba(0,242,255,0.3)]' : 'bg-white/5 text-white/40'}`}
                                     >
-                                        {selectedOS === p.id ? 'DOWNLOAD NOW' : 'SELECT OS'}
+                                        DOWNLOAD NOW
                                     </button>
                                 </div>
                             ))}
@@ -434,8 +444,8 @@
                         </div>
                     </div>
                     <div className="text-center text-gray-600 text-sm max-w-4xl mx-auto leading-loose font-medium">
-                        &copy; 2024 Zudo Launcher Project. <br/>
-                        Launch Date: May 16th, 2024. <br/><br/>
+                        &copy; 2026 Zudo Launcher Project. <br/>
+                        Launch Date: May 16th, 2026. <br/><br/>
                         <span className="opacity-50 text-[10px]">Zudo is an independent project and is not affiliated with, authorized, maintained, sponsored or endorsed by Mojang Studios, Microsoft, or any of its affiliates or subsidiaries.</span>
                     </div>
                 </div>
@@ -454,7 +464,6 @@
 
             return (
                 <div className="min-h-screen bg-[#020202] relative">
-                    {}
                     <SnowEffect />
                     <div className="pale-overlay"></div>
                     
@@ -471,13 +480,6 @@
                             <DownloadPage />
                         )}
                     </div>
-                    <a href="Zudo Launcher Setup 1.0.2.exe" download="Zudo Launcher Setup 1.0.2.exe">
-    Download Zudo Launcher
-</a>
-
-<a href="Zudo Launcher Setup 1.0.2.exe" download="Zudo Launcher Setup 1.0.2.exe" style="padding: 10px 20px; background-color: #007bff; color: white; text-decoration: none; border-radius: 5px; display: inline-block;">
-    Download Zudo Launcher
-</a>
                     <Footer />
                 </div>
             );
