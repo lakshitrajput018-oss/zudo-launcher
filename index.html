@@ -1,399 +1,578 @@
 <!DOCTYPE html>
-<html lang="en" class="scroll-smooth">
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ZUDO | The Ultimate Minecraft Client</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Zudo Launcher | The Ultimate Minecraft Experience</title>
+
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://unpkg.com/lucide@0.321.0"></script>
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet" />
+
     <style>
-        :root {
-            --primary: #00e1ff; /* Matching the cyan in logo.png */
-            --secondary: #0072ff;
-            --bg-dark: #020203;
-            --accent-glow: rgba(0, 225, 255, 0.15);
-        }
-        
         body {
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            background-color: var(--bg-dark);
-            color: #ffffff;
+            font-family: 'Inter', sans-serif;
+            background: #020202;
+            color: white;
             overflow-x: hidden;
         }
 
-        .font-heading { font-family: 'Space Grotesk', sans-serif; }
-
-        /* Premium Mesh Gradient Background */
-        .mesh-bg {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: -2;
-            background: 
-                radial-gradient(circle at 15% 15%, rgba(0, 225, 255, 0.07) 0%, transparent 45%),
-                radial-gradient(circle at 85% 85%, rgba(0, 114, 255, 0.08) 0%, transparent 45%);
+        html {
+            scroll-behavior: smooth;
         }
 
-        .glass-panel {
-            background: rgba(255, 255, 255, 0.01);
-            backdrop-filter: blur(25px);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8);
+        ::-webkit-scrollbar {
+            width: 8px;
         }
 
-        .glass-panel {
-            background: rgba(255, 255, 255, 0.02);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        ::-webkit-scrollbar-thumb {
+            background: #00f2ff;
+            border-radius: 10px;
         }
 
-        .neon-border {
-            position: relative;
-            border-radius: 1rem;
-        }
-        
-        .neon-border::after {
-            content: '';
-            position: absolute;
-            inset: -1px;
-            background: linear-gradient(45deg, var(--primary), var(--secondary));
-            z-index: -1;
-            border-radius: inherit;
-            opacity: 0.3;
-            transition: opacity 0.3s ease;
+        .glass {
+            background: rgba(255,255,255,0.03);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255,255,255,0.06);
         }
 
-        .neon-border:hover::after { opacity: 1; }
-
-        .shimmer {
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.05), transparent);
-            background-size: 200% 100%;
-            animation: shimmer 3s infinite;
+        .zudo-accent {
+            background: linear-gradient(135deg,#00f2ff,#0088ff);
         }
 
-        @keyframes shimmer {
-            0% { background-position: -200% 0; }
-            100% { background-position: 200% 0; }
+        .text-glow {
+            text-shadow: 0 0 25px rgba(0,242,255,.5);
         }
 
-        .gradient-text {
-            background: linear-gradient(to right, #00e1ff, #0072ff);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+        .logo-glow {
+            filter: drop-shadow(0 0 25px rgba(0,242,255,.35));
         }
 
-        .float { animation: float 6s ease-in-out infinite; }
+        .download-card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(0,242,255,.4);
+        }
+
+        .reveal {
+            opacity: 0;
+            transform: translateY(40px);
+            transition: all 1s cubic-bezier(0.16,1,0.3,1);
+        }
+
+        .reveal.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
         @keyframes float {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-20px); }
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
         }
 
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: #050505; }
-        ::-webkit-scrollbar-thumb { background: #1a1a1a; border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: var(--primary); }
+        .animate-float {
+            animation: float 4s ease-in-out infinite;
+        }
     </style>
 </head>
 <body>
-    <div class="mesh-bg"></div>
 
-    <nav class="fixed top-0 w-full z-[100] transition-all duration-500" id="navbar">
-        <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-            <div class="flex items-center space-x-4 group cursor-pointer">
-                <div class="w-12 h-12 transition-transform duration-500 group-hover:scale-110 group-hover:rotate-3">
-                    <img src="logo.png" alt="Zudo Logo" class="w-full h-full object-contain filter drop-shadow-[0_0_8px_rgba(0,225,255,0.5)]">
-                </div>
-                <div class="flex flex-col">
-                    <span class="text-xl font-heading font-black tracking-tighter leading-none">ZUDO</span>
-                    <span class="text-[10px] text-[#00e1ff] uppercase tracking-[0.3em] font-bold opacity-80">Launcher</span>
-                </div>
-            </div>
-            
-            <div class="hidden md:flex items-center space-x-10 text-sm font-semibold tracking-wide">
-                <a href="#features" class="hover:text-[#00e1ff] transition-colors">Performance</a>
-                <a href="#skins" class="hover:text-[#00e1ff] transition-colors">Skins Update</a>
-                <a href="#download" class="px-7 py-2.5 bg-white text-black rounded-full hover:bg-[#00e1ff] hover:shadow-[0_0_20px_rgba(0,225,255,0.4)] transition-all">Download</a>
-            </div>
-                <span class="text-2xl font-heading font-bold tracking-tighter">ZUDO<span class="text-xs text-[#00ff88] ml-1 uppercase tracking-widest opacity-50">Core</span></span>
-            </div>
-            
-            <div class="hidden md:flex items-center space-x-10 text-sm font-semibold tracking-wide">
-                <a href="#features" class="hover:text-[#00ff88] transition-colors">Performance</a>
-                <a href="#skins" class="hover:text-[#00ff88] transition-colors">Skins</a>
-                <a href="#download" class="px-6 py-2.5 bg-white text-black rounded-full hover:bg-[#00ff88] hover:scale-105 transition-all">Download</a>
-            </div>
+<div id="root"></div>
 
-            <button class="md:hidden text-2xl" onclick="toggleMenu()">
-                <i class="fa-solid fa-bars-staggered"></i>
-            </button>
-        </div>
-    </nav>
+<script type="text/babel">
 
-    <section class="relative min-h-screen flex flex-col items-center justify-center pt-32 px-6 overflow-hidden">
-        <div class="absolute top-1/4 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-[#00e1ff]/5 blur-[150px] rounded-full pointer-events-none"></div>
-        
-        <div class="text-center z-10 max-w-5xl mx-auto">
-            <div class="inline-flex items-center px-4 py-2 rounded-full glass-panel border border-white/5 text-[10px] font-black tracking-[0.25em] uppercase text-[#00e1ff] mb-10">
-                <span class="w-1.5 h-1.5 rounded-full bg-[#00e1ff] mr-3 animate-ping"></span> Enterprise Grade Launcher
-            </div>
-            
-            <h1 class="text-6xl md:text-8xl font-heading font-bold leading-[0.9] mb-8 tracking-tighter">
-                Unleash the <br>
-                <span class="gradient-text">Absolute Core.</span>
-            </h1>
-            
-            <p class="max-w-xl mx-auto text-lg text-gray-400 mb-12 font-medium leading-relaxed opacity-80">
-                The fastest way to experience Minecraft. Zero-latency injection, optimized memory buffers, and a design built for the elite.
-            </p>
+const { useEffect, useRef, useState } = React;
 
-            <div class="flex flex-col sm:flex-row items-center justify-center gap-6">
-                <a href="#download" class="group relative px-12 py-5 bg-[#00e1ff] text-black font-black rounded-2xl overflow-hidden hover:scale-105 transition-all shadow-[0_0_50px_rgba(0,225,255,0.25)]">
-                    <span class="relative z-10 flex items-center gap-3">
-                        <i class="fa-solid fa-play text-xs"></i> LAUNCH NOW
-                    </span>
-                </a>
-                <a href="#skins" class="px-12 py-5 glass-panel rounded-2xl border border-white/10 hover:bg-white/5 transition-all font-bold text-gray-300">
-                    Read Update Logs
-                </a>
-            </div>
-        </div>
+const SnowEffect = () => {
+    const canvasRef = useRef(null);
 
-        <!-- Floating Mockup -->
-        <div class="mt-28 w-full max-w-6xl relative float group">
-            <div class="rounded-[2.5rem] overflow-hidden border border-white/10 glass-panel shadow-2xl relative">
-                <div class="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent pointer-events-none"></div>
-                <img src="https://placehold.co/1200x700/020203/00e1ff?text=ZUDO+V2.4+DASHBOARD" alt="Launcher Interface" class="w-full opacity-90 grayscale-[0.2] group-hover:grayscale-0 transition-all duration-700">
-            </div>
-            
-            <!-- Performance Badges -->
-            <div class="absolute -top-12 -left-8 glass-panel p-6 rounded-3xl border border-[#00e1ff]/20 hidden lg:block animate-pulse">
-                <div class="flex items-center gap-4">
-                    <div class="text-3xl text-[#00e1ff] font-heading font-black">0.4s</div>
-                    <div class="text-[9px] uppercase font-bold tracking-widest text-gray-500 leading-tight">Injection<br>Speed</div>
-                </div>
-            </div>
-            <div class="absolute -bottom-10 -right-10 glass-panel p-6 rounded-3xl border border-[#0072ff]/20 hidden lg:block">
-                <div class="flex items-center gap-4 text-right">
-                    <div class="text-[9px] uppercase font-bold tracking-widest text-gray-500 leading-tight">RAM<br>Optimized</div>
-                    <div class="text-3xl text-[#0072ff] font-heading font-black">99.9%</div>
-                </div>
-            </div>
-        </div>
-    </section>
+    useEffect(() => {
+        const canvas = canvasRef.current;
+        const ctx = canvas.getContext("2d");
 
-    <section id="skins" class="py-40 px-6 relative">
-        <div class="max-w-7xl mx-auto">
-            <div class="grid lg:grid-cols-2 gap-20 items-center">
-                <div>
-                    <div class="flex items-center gap-3 mb-6">
-                        <span class="h-[1px] w-12 bg-[#00e1ff]"></span>
-                        <span class="text-[#00e1ff] font-black tracking-[0.3em] uppercase text-[10px]">Development Log</span>
-                    </div>
-                    <h2 class="text-5xl md:text-6xl font-heading font-bold mb-10 tracking-tighter leading-tight">Skins & Capes<br><span class="opacity-30">Status Update</span></h2>
-                    
-                    <div class="space-y-8">
-                        <div class="glass-panel p-8 rounded-[2rem] border-l-4 border-[#00e1ff] bg-gradient-to-r from-[#00e1ff]/5 to-transparent">
-                            <h3 class="text-xl font-black mb-4 flex items-center gap-3">
-                                <i class="fa-solid fa-code-branch text-[#00e1ff]"></i> The Roadmap
-                            </h3>
-                            <p class="text-gray-400 leading-relaxed mb-6 font-medium">
-                                We are engineering a native, encrypted skin-injection system for offline sessions. This is a core priority for the upcoming major patch.
-                            </p>
-                            <div class="flex items-center gap-4">
-                                <span class="px-3 py-1 bg-[#00e1ff]/10 text-[#00e1ff] rounded-lg text-[10px] font-black uppercase">In Sprint</span>
-                                <span class="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Target: v3.0 Alpha</span>
-                            </div>
-                        </div>
+        let particles = [];
+        let animationFrame;
 
-                        <div class="p-8 rounded-3xl glass-panel border border-white/5 italic opacity-80">
-                            <p class="text-sm font-medium text-gray-400">
-                                "Native skin support for offline accounts is currently being optimized. Until deployment, Zudo remains compatible with industry-standard injectors."
-                            </p>
-                        </div>
-                    </div>
-                </div>
+        const resize = () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        };
 
-                <!-- Workaround Module -->
-                <div class="relative group">
-                    <div class="absolute -inset-4 bg-[#00e1ff]/10 blur-3xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
-                    <div class="relative glass-panel rounded-[3rem] p-10 md:p-14 border border-white/10 overflow-hidden">
-                        <div class="flex items-center justify-between mb-12">
-                            <div>
-                                <h3 class="text-2xl font-black font-heading">CustomSkinLoader</h3>
-                                <p class="text-[10px] text-gray-500 uppercase font-bold tracking-widest mt-1">Temporary Offline Patch</p>
-                            </div>
-                            <div class="w-14 h-14 bg-white/5 rounded-2xl flex items-center justify-center border border-white/10">
-                                <i class="fa-solid fa-wand-magic-sparkles text-[#00e1ff] text-xl"></i>
-                            </div>
-                        </div>
-
-                        <div class="space-y-8 mb-12">
-                            <div class="flex gap-6 items-start">
-                                <div class="flex-shrink-0 w-8 h-8 rounded-lg bg-[#00e1ff] text-black flex items-center justify-center font-black text-sm">1</div>
-                                <div>
-                                    <h4 class="font-bold text-white mb-1">Source Retrieval</h4>
-                                    <p class="text-xs text-gray-400 leading-relaxed">Download the CSL version for Forge/Fabric/Quilt corresponding to your game version.</p>
-                                </div>
-                            </div>
-                            <div class="flex gap-6 items-start">
-                                <div class="flex-shrink-0 w-8 h-8 rounded-lg bg-white/10 text-white flex items-center justify-center font-black text-sm">2</div>
-                                <div>
-                                    <h4 class="font-bold text-white mb-1">System Injection</h4>
-                                    <p class="text-xs text-gray-400 leading-relaxed">Move the <code class="text-[#00e1ff] bg-[#00e1ff]/5 px-1.5 py-0.5 rounded">.jar</code> file into your client's <code class="text-[#00e1ff]">/mods</code> directory.</p>
-                                </div>
-                            </div>
-                            <div class="flex gap-6 items-start">
-                                <div class="flex-shrink-0 w-8 h-8 rounded-lg bg-white/10 text-white flex items-center justify-center font-black text-sm">3</div>
-                                <div>
-                                    <h4 class="font-bold text-white mb-1">Initialization</h4>
-                                    <p class="text-xs text-gray-400 leading-relaxed">Launch Zudo to generate local config buffers. Place skin at the path below.</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Terminal Block -->
-                        <div class="bg-black/80 rounded-2xl p-7 border border-white/5 font-mono text-[11px] group/term">
-                            <div class="flex items-center gap-1.5 mb-5">
-                                <div class="w-2.5 h-2.5 rounded-full bg-[#ff5f56]"></div>
-                                <div class="w-2.5 h-2.5 rounded-full bg-[#ffbd2e]"></div>
-                                <div class="w-2.5 h-2.5 rounded-full bg-[#27c93f]"></div>
-                                <span class="ml-2 text-gray-600 uppercase font-bold text-[9px] tracking-widest">Local-Injection-Path</span>
-                            </div>
-                            <code class="text-gray-300 block break-all leading-relaxed">
-                                .minecraft/CustomSkinLoader/LocalSkin/skins/<span class="text-[#00e1ff] animate-pulse">YourUsername.png</span>
-                            </code>
-                            <button onclick="copyPath()" class="mt-6 flex items-center gap-2 text-[#00e1ff] hover:text-white transition-colors uppercase font-black text-[9px] tracking-widest">
-                                <i class="fa-solid fa-copy"></i> Copy Path to Clipboard
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <section id="download" class="py-40 px-6">
-        <div class="max-w-6xl mx-auto glass-panel rounded-[4rem] p-16 md:p-24 text-center border border-[#00e1ff]/10 relative overflow-hidden group">
-            <div class="absolute -top-32 -right-32 w-96 h-96 bg-[#00e1ff]/5 blur-[120px] rounded-full group-hover:scale-125 transition-transform duration-1000"></div>
-            
-            <h2 class="text-5xl md:text-7xl font-heading font-black mb-8 tracking-tighter">Enter the System.</h2>
-            <p class="text-gray-400 mb-16 max-w-2xl mx-auto text-lg leading-relaxed">Experience the highest level of Minecraft client engineering. Fully open-source, community-audited, and performance-first.</p>
-            
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <button onclick="triggerDownload('Windows')" class="p-10 glass-panel rounded-[2rem] border border-white/5 hover:border-[#00e1ff]/30 hover:bg-[#00e1ff]/5 transition-all group/btn">
-                    <i class="fa-brands fa-windows text-4xl mb-6 text-[#00e1ff] group-hover/btn:scale-110 transition-transform"></i>
-                    <div class="font-black text-xl mb-1 tracking-tight">Windows</div>
-                    <div class="text-[9px] text-gray-500 uppercase font-black tracking-widest">x64 / arm64</div>
-                </button>
-                <button onclick="triggerDownload('macOS')" class="p-10 glass-panel rounded-[2rem] border border-white/5 hover:border-white/30 hover:bg-white/5 transition-all group/btn">
-                    <i class="fa-brands fa-apple text-4xl mb-6 text-white group-hover/btn:scale-110 transition-transform"></i>
-                    <div class="font-black text-xl mb-1 tracking-tight">macOS</div>
-                    <div class="text-[9px] text-gray-500 uppercase font-black tracking-widest">Apple Silicon / Intel</div>
-                </button>
-                <button onclick="triggerDownload('Linux')" class="p-10 glass-panel rounded-[2rem] border border-white/5 hover:border-[#0072ff]/30 hover:bg-[#0072ff]/5 transition-all group/btn">
-                    <i class="fa-brands fa-linux text-4xl mb-6 text-[#0072ff] group-hover/btn:scale-110 transition-transform"></i>
-                    <div class="font-black text-xl mb-1 tracking-tight">Linux</div>
-                    <div class="text-[9px] text-gray-500 uppercase font-black tracking-widest">AppImage / Deb</div>
-                </button>
-            </div>
-        </div>
-    </section>
-
-    <footer class="py-24 border-t border-white/5 px-6">
-        <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-12">
-            <div class="flex flex-col items-center md:items-start">
-                <div class="flex items-center space-x-3 mb-6">
-                    <img src="logo.png" alt="Zudo Logo" class="w-8 h-8 opacity-80">
-                    <span class="font-heading font-black text-2xl tracking-tighter">ZUDO</span>
-                </div>
-                <p class="text-[10px] text-gray-600 font-bold uppercase tracking-widest text-center md:text-left leading-relaxed">
-                    © 2024 Zudo Development Labs.<br>
-                    Engineered for high-performance gaming.
-                </p>
-            </div>
-            <div class="flex gap-10">
-                <a href="#" class="text-gray-500 hover:text-[#00e1ff] transition-colors"><i class="fa-brands fa-github text-2xl"></i></a>
-                <a href="#" class="text-gray-500 hover:text-[#00e1ff] transition-colors"><i class="fa-brands fa-discord text-2xl"></i></a>
-                <a href="#" class="text-gray-500 hover:text-[#00e1ff] transition-colors"><i class="fa-brands fa-x-twitter text-2xl"></i></a>
-            </div>
-        </div>
-    </footer>
-
-    <!-- Toast Notification -->
-    <div id="toast" class="fixed bottom-10 left-1/2 -translate-x-1/2 md:translate-x-0 md:left-auto md:right-10 glass-panel p-5 rounded-2xl border border-[#00ff88]/30 flex items-center gap-4 translate-y-32 opacity-0 transition-all duration-500 z-[200]">
-        <div class="w-12 h-12 rounded-xl bg-[#00ff88] flex items-center justify-center text-black">
-            <i class="fa-solid fa-download text-xl"></i>
-        </div>
-        <div class="text-left">
-            <div class="font-bold text-sm" id="toast-title">Initializing...</div>
-            <div class="text-[10px] text-gray-400 font-bold uppercase tracking-widest" id="toast-msg">Zudo-Installer.exe</div>
-        </div>
-    </div>
-
-    <script>
-        // Navbar scroll effect
-        window.addEventListener('scroll', () => {
-            const nav = document.getElementById('navbar');
-            if (window.scrollY > 50) {
-                nav.classList.add('glass-panel', 'py-3');
-                nav.classList.remove('py-5');
-            } else {
-                nav.classList.remove('glass-panel', 'py-3');
-                nav.classList.add('py-5');
+        class Snowflake {
+            constructor() {
+                this.reset();
             }
-        });
 
-        function copyPath() {
-            const text = ".minecraft/CustomSkinLoader/LocalSkin/skins/YourUsername.png";
-            const dummy = document.createElement("textarea");
-            document.body.appendChild(dummy);
-            dummy.value = text;
-            dummy.select();
-            document.execCommand("copy");
-            document.body.removeChild(dummy);
-            
-            showToast("Copied to Clipboard", "Path structure copied successfully.");
+            reset() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * -canvas.height;
+                this.size = Math.random() * 3 + 1;
+                this.speed = Math.random() * 1 + 0.5;
+                this.opacity = Math.random() * 0.5 + 0.2;
+            }
+
+            update() {
+                this.y += this.speed;
+
+                if (this.y > canvas.height) {
+                    this.reset();
+                }
+            }
+
+            draw() {
+                ctx.fillStyle = `rgba(255,255,255,${this.opacity})`;
+
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+            }
         }
 
-        function triggerDownload(os) {
-            const file = `Zudo-Launcher-v2.4-${os.toLowerCase()}.msi`;
-            showToast("Download Starting", file);
-        }
+        const init = () => {
+            resize();
 
-        function showToast(title, msg) {
-            const toast = document.getElementById('toast');
-            document.getElementById('toast-title').innerText = title;
-            document.getElementById('toast-msg').innerText = msg;
-            
-            toast.classList.remove('translate-y-32', 'opacity-0');
-            setTimeout(() => {
-                toast.classList.add('translate-y-32', 'opacity-0');
-            }, 4000);
-        }
+            particles = Array.from(
+                { length: 120 },
+                () => new Snowflake()
+            );
+        };
 
-        // Simple Intersection Observer for scroll animations
-        const revealElements = document.querySelectorAll('section, .glass-panel');
+        const animate = () => {
+            ctx.clearRect(0,0,canvas.width,canvas.height);
+
+            particles.forEach(p => {
+                p.update();
+                p.draw();
+            });
+
+            animationFrame = requestAnimationFrame(animate);
+        };
+
+        init();
+        animate();
+
+        window.addEventListener("resize", resize);
+
+        return () => {
+            window.removeEventListener("resize", resize);
+            cancelAnimationFrame(animationFrame);
+        };
+    }, []);
+
+    return (
+        <canvas
+            ref={canvasRef}
+            className="fixed top-0 left-0 w-full h-full pointer-events-none z-0 opacity-40"
+        />
+    );
+};
+
+const useScrollReveal = () => {
+    const ref = useRef(null);
+
+    useEffect(() => {
         const observer = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.style.opacity = '1';
-                    entry.target.style.transform = 'translateY(0)';
+                if(entry.isIntersecting){
+                    entry.target.classList.add("active");
                 }
             });
-        }, { threshold: 0.1 });
-
-        revealElements.forEach(el => {
-            el.style.opacity = '0';
-            el.style.transform = 'translateY(30px)';
-            el.style.transition = 'all 0.8s cubic-bezier(0.2, 0.8, 0.2, 1)';
-            observer.observe(el);
         });
-    </script>
+
+        if(ref.current){
+            observer.observe(ref.current);
+        }
+
+        return () => {
+            if(ref.current){
+                observer.unobserve(ref.current);
+            }
+        };
+    }, []);
+
+    return ref;
+};
+
+const Navbar = ({ currentPage, setCurrentPage }) => {
+
+    return (
+        <nav className="fixed top-0 w-full z-50 glass py-4">
+            <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
+
+                <div
+                    onClick={() => setCurrentPage("home")}
+                    className="flex items-center gap-4 cursor-pointer"
+                >
+                    <img
+                        src="logo.png"
+                        className="w-12 h-12 rounded-xl"
+                    />
+
+                    <span className="text-2xl font-black uppercase tracking-tight">
+                        Zudo <span className="text-cyan-400">Launcher</span>
+                    </span>
+                </div>
+
+                <div className="flex items-center gap-6 uppercase text-sm font-bold">
+
+                    <button
+                        onClick={() => setCurrentPage("home")}
+                        className="hover:text-cyan-400 transition"
+                    >
+                        Home
+                    </button>
+
+                    <button
+                        onClick={() => setCurrentPage("download")}
+                        className="zudo-accent text-black px-6 py-2 rounded-full font-black hover:scale-105 transition"
+                    >
+                        Download
+                    </button>
+
+                </div>
+            </div>
+        </nav>
+    );
+};
+
+const Hero = ({ setCurrentPage }) => {
+
+    const revealRef = useScrollReveal();
+
+    return (
+        <section className="min-h-screen flex items-center justify-center px-6 relative">
+
+            <div
+                ref={revealRef}
+                className="reveal text-center relative z-10 max-w-5xl"
+            >
+
+                <img
+                    src="logo.png"
+                    className="w-52 h-52 mx-auto mb-10 rounded-[40px] logo-glow animate-float"
+                />
+
+                <h1 className="text-6xl md:text-8xl font-black tracking-tighter mb-8">
+                    THE NEW <br />
+                    <span className="text-cyan-400 text-glow italic">
+                        STANDARD.
+                    </span>
+                </h1>
+
+                <p className="text-xl text-gray-400 max-w-2xl mx-auto mb-12">
+                    Fast. Lightweight. Optimized for the best Minecraft experience.
+                </p>
+
+                <button
+                    onClick={() => setCurrentPage("download")}
+                    className="zudo-accent px-14 py-5 rounded-2xl text-black font-black text-xl hover:scale-105 transition"
+                >
+                    DOWNLOAD NOW
+                </button>
+
+            </div>
+        </section>
+    );
+};
+
+const Features = () => {
+
+    const features = [
+        {
+            title: "Pure Speed",
+            desc: "Optimized for maximum FPS and fast startup.",
+            icon: "zap"
+        },
+        {
+            title: "Zero Lag",
+            desc: "Minimal resource usage while gaming.",
+            icon: "activity"
+        },
+        {
+            title: "Universal",
+            desc: "Supports all major Minecraft versions.",
+            icon: "layers"
+        },
+        {
+            title: "Secured",
+            desc: "Safe and stable launcher experience.",
+            icon: "shield-check"
+        }
+    ];
+
+    return (
+        <section className="py-32 px-6">
+
+            <div className="max-w-7xl mx-auto">
+
+                <h2 className="text-5xl font-black mb-20 text-center uppercase">
+                    Built To <span className="text-cyan-400">Perform</span>
+                </h2>
+
+                <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+
+                    {features.map((feature, i) => {
+
+                        const ref = useScrollReveal();
+
+                        return (
+                            <div
+                                key={i}
+                                ref={ref}
+                                className="reveal glass p-10 rounded-[35px]"
+                            >
+
+                                <div className="w-16 h-16 zudo-accent rounded-2xl flex items-center justify-center mb-8">
+                                    <i data-lucide={feature.icon} className="text-black w-8 h-8"></i>
+                                </div>
+
+                                <h3 className="text-3xl font-black mb-5">
+                                    {feature.title}
+                                </h3>
+
+                                <p className="text-gray-400">
+                                    {feature.desc}
+                                </p>
+
+                            </div>
+                        );
+
+                    })}
+
+                </div>
+
+            </div>
+
+        </section>
+    );
+};
+
+const About = () => {
+
+    const ref = useScrollReveal();
+
+    return (
+        <section className="py-32 px-6">
+
+            <div
+                ref={ref}
+                className="reveal max-w-5xl mx-auto text-center"
+            >
+
+                <h2 className="text-5xl md:text-7xl font-black uppercase mb-12">
+                    About <span className="text-cyan-400">Zudo</span>
+                </h2>
+
+                <p className="text-xl text-gray-400 leading-relaxed">
+                    Zudo Launcher is designed to provide a fast, stable,
+                    and smooth Minecraft experience for every player.
+                    Our focus is performance, simplicity, and a clean interface
+                    without unnecessary clutter.
+                </p>
+
+            </div>
+
+        </section>
+    );
+};
+
+const DownloadPage = () => {
+
+    const [selectedOS, setSelectedOS] = useState("windows");
+
+    const platforms = [
+        {
+            id: "windows",
+            name: "Windows",
+            icon: "monitor",
+            available: true
+        },
+        {
+            id: "macos",
+            name: "macOS",
+            icon: "apple",
+            available: false
+        },
+        {
+            id: "linux",
+            name: "Linux",
+            icon: "terminal",
+            available: false
+        }
+    ];
+
+    const handleDownload = (platform) => {
+
+        if(!platform.available){
+            alert(`${platform.name} version is coming soon.`);
+            return;
+        }
+
+        const link = document.createElement("a");
+
+        link.href = "Zudo Launcher Setup 1.0.2.exe";
+        link.download = "Zudo Launcher Setup 1.0.2.exe";
+
+        document.body.appendChild(link);
+
+        link.click();
+
+        document.body.removeChild(link);
+    };
+
+    return (
+        <div className="pt-36 pb-20 px-6 min-h-screen">
+
+            <div className="max-w-7xl mx-auto">
+
+                <div className="text-center mb-20">
+
+                    <h1 className="text-6xl font-black uppercase mb-6">
+                        Download <span className="text-cyan-400">Zudo</span>
+                    </h1>
+
+                    <p className="text-gray-400 text-xl">
+                        Select your operating system below.
+                    </p>
+
+                </div>
+
+                <div className="grid lg:grid-cols-3 gap-8">
+
+                    {platforms.map((platform) => (
+
+                        <div
+                            key={platform.id}
+                            onClick={() => setSelectedOS(platform.id)}
+                            className={`download-card glass p-10 rounded-[35px] border-2 transition-all cursor-pointer ${
+                                selectedOS === platform.id
+                                    ? "border-cyan-400"
+                                    : "border-transparent"
+                            }`}
+                        >
+
+                            <div className={`w-16 h-16 rounded-2xl flex items-center justify-center mb-8 ${
+                                platform.available
+                                    ? "zudo-accent text-black"
+                                    : "bg-white/10 text-white"
+                            }`}>
+                                <i data-lucide={platform.icon} className="w-8 h-8"></i>
+                            </div>
+
+                            <h2 className="text-3xl font-black mb-4">
+                                {platform.name}
+                            </h2>
+
+                            <p className="text-gray-400 mb-8">
+                                {platform.available
+                                    ? "Available Now"
+                                    : "Coming Soon"}
+                            </p>
+
+                            <button
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleDownload(platform);
+                                }}
+                                className={`w-full py-5 rounded-2xl font-black transition ${
+                                    platform.available
+                                        ? "zudo-accent text-black hover:scale-105"
+                                        : "bg-white/10 text-white/50"
+                                }`}
+                            >
+                                {platform.available
+                                    ? "DOWNLOAD NOW"
+                                    : "COMING SOON"}
+                            </button>
+
+                        </div>
+
+                    ))}
+
+                </div>
+
+            </div>
+
+        </div>
+    );
+};
+
+const Footer = () => (
+    <footer className="py-16 border-t border-white/5">
+
+        <div className="max-w-7xl mx-auto px-6 text-center">
+
+            <img
+                src="logo.png"
+                className="w-14 h-14 mx-auto mb-6 rounded-2xl"
+            />
+
+            <h2 className="text-3xl font-black uppercase mb-4">
+                Zudo Launcher
+            </h2>
+
+            <p className="text-gray-500">
+                © 2026 Zudo Launcher. All rights reserved.
+            </p>
+
+        </div>
+
+    </footer>
+);
+
+const App = () => {
+
+    const [currentPage, setCurrentPage] = useState("home");
+
+    useEffect(() => {
+
+        if(window.lucide){
+            window.lucide.createIcons();
+        }
+
+        window.scrollTo(0,0);
+
+    }, [currentPage]);
+
+    return (
+        <div className="min-h-screen bg-[#020202] relative">
+
+            <SnowEffect />
+
+            <Navbar
+                currentPage={currentPage}
+                setCurrentPage={setCurrentPage}
+            />
+
+            <div className="relative z-10">
+
+                {currentPage === "home" ? (
+                    <>
+                        <Hero setCurrentPage={setCurrentPage} />
+                        <Features />
+                        <About />
+                    </>
+                ) : (
+                    <DownloadPage />
+                )}
+
+            </div>
+
+            <Footer />
+
+        </div>
+    );
+};
+
+const root = ReactDOM.createRoot(document.getElementById("root"));
+
+root.render(<App />);
+
+</script>
+
 </body>
 </html>
