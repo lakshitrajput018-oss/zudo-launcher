@@ -40,10 +40,23 @@
         .logo-glow {
             filter: drop-shadow(0 0 20px rgba(0, 242, 255, 0.3));
         }
+        .download-card:hover {
+            border-color: rgba(0, 242, 255, 0.4);
+            transform: translateY(-5px);
+        }
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: #020202; }
         ::-webkit-scrollbar-thumb { background: #00f2ff; border-radius: 4px; }
         html { scroll-behavior: smooth; }
+        
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+        .animate-float {
+            animation: float 4s ease-in-out infinite;
+        }
     </style>
 </head>
 <body>
@@ -69,7 +82,7 @@
             return ref;
         };
 
-        const Navbar = () => {
+        const Navbar = ({ currentPage, setCurrentPage }) => {
             const [scrolled, setScrolled] = useState(false);
             useEffect(() => {
                 const handleScroll = () => setScrolled(window.scrollY > 50);
@@ -80,21 +93,32 @@
             return (
                 <nav className={`fixed top-0 w-full z-50 transition-all duration-500 ${scrolled ? 'glass py-3 border-b border-white/10' : 'bg-transparent py-6'}`}>
                     <div className="max-w-7xl mx-auto px-6 flex justify-between items-center">
-                        <div className="flex items-center gap-4">
-                            <img src="logo.png" alt="Zudo Logo" className="w-12 h-12 rounded-lg" />
-                            <span className="text-xl font-black tracking-tighter uppercase">Zudo <span className="text-cyan-400">Launcher</span></span>
+                        <div className="flex items-center gap-4 cursor-pointer" onClick={() => setCurrentPage('home')}>
+                            <img src="logo.png" alt="Zudo Logo" className="w-10 h-10 md:w-12 md:h-12 rounded-lg" />
+                            <span className="text-xl font-black tracking-tighter uppercase hidden sm:inline">Zudo <span className="text-cyan-400">Launcher</span></span>
                         </div>
-                        <div className="hidden md:flex items-center gap-10 text-sm font-bold uppercase tracking-widest text-gray-400">
-                            <a href="#features" className="hover:text-cyan-400 transition-colors">Features</a>
-                            <a href="#about" className="hover:text-cyan-400 transition-colors">About</a>
-                            <a href="#" className="zudo-accent px-8 py-3 rounded-full text-black font-black shadow-[0_5px_20px_rgba(0,242,255,0.4)] hover:scale-105 transition-transform active:scale-95">Download</a>
+                        <div className="flex items-center gap-6 md:gap-10 text-xs md:text-sm font-bold uppercase tracking-widest text-gray-400">
+                            {currentPage === 'home' ? (
+                                <>
+                                    <a href="#features" className="hover:text-cyan-400 transition-colors">Features</a>
+                                    <a href="#about" className="hover:text-cyan-400 transition-colors">About</a>
+                                </>
+                            ) : (
+                                <button onClick={() => setCurrentPage('home')} className="hover:text-cyan-400 transition-colors">Back Home</button>
+                            )}
+                            <button 
+                                onClick={() => setCurrentPage('download')}
+                                className={`px-6 py-2 rounded-full font-black shadow-lg transition-all active:scale-95 ${currentPage === 'download' ? 'bg-white text-black' : 'zudo-accent text-black shadow-[0_5px_20px_rgba(0,242,255,0.4)] hover:scale-105'}`}
+                            >
+                                Download
+                            </button>
                         </div>
                     </div>
                 </nav>
             );
         };
 
-        const Hero = () => {
+        const Hero = ({ setCurrentPage }) => {
             const revealRef = useScrollReveal();
             return (
                 <section className="relative min-h-screen flex flex-col items-center justify-center pt-32 pb-20 px-6 overflow-hidden">
@@ -107,7 +131,7 @@
                         </div>
                         
                         <div className="mb-10 flex justify-center">
-                            <img src="IMG_20260514_135615.jpg" className="w-48 h-48 md:w-64 md:h-64 rounded-[2.5rem] logo-glow shadow-2xl rotate-1 hover:rotate-0 transition-all duration-500" alt="Zudo Launcher Logo" />
+                            <img src="logo.png" className="w-48 h-48 md:w-64 md:h-64 rounded-[2.5rem] logo-glow shadow-2xl animate-float" alt="Zudo Launcher Logo" />
                         </div>
 
                         <h1 className="text-6xl md:text-9xl font-black mb-10 leading-[1] tracking-tighter">
@@ -119,11 +143,17 @@
                         </p>
                         
                         <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
-                            <button className="zudo-accent w-full sm:w-auto px-16 py-6 rounded-2xl text-xl font-black text-black shadow-[0_15px_50px_rgba(0,242,255,0.4)] hover:-translate-y-1 transition-all active:scale-95">
-                                GET READY
+                            <button 
+                                onClick={() => setCurrentPage('download')}
+                                className="zudo-accent w-full sm:w-auto px-16 py-6 rounded-2xl text-xl font-black text-black shadow-[0_15px_50px_rgba(0,242,255,0.4)] hover:-translate-y-1 transition-all active:scale-95"
+                            >
+                                DOWNLOAD NOW
                             </button>
-                            <button className="glass w-full sm:w-auto px-16 py-6 rounded-2xl text-xl font-black hover:bg-white/5 transition-all border border-white/10">
-                                MAY 16 RELEASE
+                            <button 
+                                onClick={() => document.getElementById('about').scrollIntoView()}
+                                className="glass w-full sm:w-auto px-16 py-6 rounded-2xl text-xl font-black hover:bg-white/5 transition-all border border-white/10"
+                            >
+                                LEARN MORE
                             </button>
                         </div>
                     </div>
@@ -195,7 +225,7 @@
                                 <div className="absolute -inset-10 bg-cyan-500/20 blur-[100px] rounded-full group-hover:bg-cyan-500/30 transition-all duration-700"></div>
                                 <div className="relative glass p-6 rounded-[3.5rem] shadow-2xl rotate-2 hover:rotate-0 transition-all duration-700">
                                     <img 
-                                        src="IMG_20260514_135615.jpg" 
+                                        src="logo.png" 
                                         className="w-full rounded-[2.5rem] grayscale group-hover:grayscale-0 transition-all" 
                                         alt="Launcher Graphic"
                                     />
@@ -210,12 +240,87 @@
             );
         };
 
+        const DownloadPage = () => {
+            const [selectedOS, setSelectedOS] = useState('windows');
+            
+            const platforms = [
+                { id: 'windows', name: 'Windows', icon: 'monitor', ext: '.exe', version: 'v1.0.4' },
+                { id: 'macos', name: 'macOS', icon: 'apple', ext: '.dmg', version: 'v1.0.4' },
+                { id: 'linux', name: 'Linux', icon: 'terminal', ext: '.AppImage', version: 'v1.0.4' }
+            ];
+
+            return (
+                <div className="pt-32 pb-20 px-6 min-h-screen">
+                    <div className="max-w-7xl mx-auto">
+                        <div className="text-center mb-20 animate-in fade-in slide-in-from-bottom-10 duration-700">
+                            <h1 className="text-5xl md:text-7xl font-black mb-6 tracking-tighter uppercase italic">
+                                Ready for <span className="text-cyan-400">Launch.</span>
+                            </h1>
+                            <p className="text-xl text-gray-400 font-medium">Select your platform and get ready for May 16th.</p>
+                        </div>
+
+                        <div className="grid lg:grid-cols-3 gap-8 mb-20">
+                            {platforms.map((p) => (
+                                <div 
+                                    key={p.id}
+                                    onClick={() => setSelectedOS(p.id)}
+                                    className={`download-card p-10 rounded-[3rem] glass cursor-pointer transition-all border-2 ${selectedOS === p.id ? 'border-cyan-400 bg-cyan-400/5' : 'border-transparent'}`}
+                                >
+                                    <div className={`w-14 h-14 rounded-2xl flex items-center justify-center mb-8 ${selectedOS === p.id ? 'zudo-accent text-black' : 'bg-white/5 text-white'}`}>
+                                        <i data-lucide={p.icon} className="w-8 h-8"></i>
+                                    </div>
+                                    <h3 className="text-2xl font-black mb-2 uppercase">{p.name}</h3>
+                                    <p className="text-gray-500 font-bold text-sm tracking-widest mb-10">{p.version} | {p.ext}</p>
+                                    
+                                    <button className={`w-full py-5 rounded-2xl font-black transition-all ${selectedOS === p.id ? 'zudo-accent text-black shadow-[0_10px_30px_rgba(0,242,255,0.3)]' : 'bg-white/5 text-white/40 cursor-not-allowed'}`}>
+                                        {selectedOS === p.id ? 'PRE-DOWNLOAD' : 'SELECT OS'}
+                                    </button>
+                                </div>
+                            ))}
+                        </div>
+
+                        <div className="glass p-12 rounded-[3.5rem] grid md:grid-cols-2 gap-16 items-center">
+                            <div>
+                                <h3 className="text-3xl font-black mb-8 uppercase tracking-tight">System <span className="text-cyan-400">Requirements</span></h3>
+                                <div className="space-y-6">
+                                    <div className="flex justify-between items-center border-b border-white/5 pb-4">
+                                        <span className="text-gray-400 font-bold uppercase text-xs tracking-widest">Processor</span>
+                                        <span className="font-bold">Intel Core i3 / AMD Ryzen 3</span>
+                                    </div>
+                                    <div className="flex justify-between items-center border-b border-white/5 pb-4">
+                                        <span className="text-gray-400 font-bold uppercase text-xs tracking-widest">Memory</span>
+                                        <span className="font-bold">4GB DDR4 RAM</span>
+                                    </div>
+                                    <div className="flex justify-between items-center border-b border-white/5 pb-4">
+                                        <span className="text-gray-400 font-bold uppercase text-xs tracking-widest">Graphics</span>
+                                        <span className="font-bold">Intel HD 4000+ / RX Series</span>
+                                    </div>
+                                    <div className="flex justify-between items-center">
+                                        <span className="text-gray-400 font-bold uppercase text-xs tracking-widest">Storage</span>
+                                        <span className="font-bold">500MB Free Space</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="relative">
+                                <div className="absolute inset-0 bg-cyan-400/10 blur-3xl rounded-full"></div>
+                                <div className="relative p-10 glass border border-cyan-400/20 rounded-[2.5rem] text-center">
+                                    <div className="text-sm font-black text-cyan-400 uppercase tracking-[0.3em] mb-4">Availability</div>
+                                    <div className="text-4xl font-black mb-4 uppercase italic">Global Access</div>
+                                    <p className="text-gray-400 text-sm leading-relaxed">Servers will open at 12:00 PM EST on May 16th. Ensure your account is authenticated beforehand for instant play.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
         const Footer = () => (
             <footer className="py-24 border-t border-white/5 bg-[#010101]">
                 <div className="max-w-7xl mx-auto px-6">
                     <div className="flex flex-col md:flex-row justify-between items-center gap-16 mb-20">
                         <div className="flex items-center gap-4">
-                            <img src="IMG_20260514_135615.jpg" className="w-10 h-10 rounded-lg" alt="Logo" />
+                            <img src="logo.png" className="w-10 h-10 rounded-lg" alt="Logo" />
                             <span className="font-black tracking-tighter text-2xl uppercase">ZUDO</span>
                         </div>
                         <div className="flex flex-wrap justify-center gap-10 text-gray-500 font-bold uppercase text-sm tracking-[0.2em]">
@@ -228,25 +333,36 @@
                     <div className="text-center text-gray-600 text-sm max-w-4xl mx-auto leading-loose font-medium">
                         &copy; 2024 Zudo Launcher Project. <br/>
                         Launch Date: May 16th, 2024. <br/><br/>
-                        <span className="opacity-50">Zudo is an independent project and is not affiliated with, authorized, maintained, sponsored or endorsed by Mojang Studios, Microsoft, or any of its affiliates or subsidiaries.</span>
+                        <span className="opacity-50 text-[10px]">Zudo is an independent project and is not affiliated with, authorized, maintained, sponsored or endorsed by Mojang Studios, Microsoft, or any of its affiliates or subsidiaries.</span>
                     </div>
                 </div>
             </footer>
         );
 
         const App = () => {
+            const [currentPage, setCurrentPage] = useState('home');
+
             useEffect(() => {
                 if (window.lucide) {
                     window.lucide.createIcons();
                 }
-            }, []);
+                window.scrollTo(0, 0);
+            }, [currentPage]);
 
             return (
-                <div className="min-h-screen">
-                    <Navbar />
-                    <Hero />
-                    <Features />
-                    <AboutUs />
+                <div className="min-h-screen bg-[#020202]">
+                    <Navbar currentPage={currentPage} setCurrentPage={setCurrentPage} />
+                    
+                    {currentPage === 'home' ? (
+                        <>
+                            <Hero setCurrentPage={setCurrentPage} />
+                            <Features />
+                            <AboutUs />
+                        </>
+                    ) : (
+                        <DownloadPage />
+                    )}
+                    
                     <Footer />
                 </div>
             );
