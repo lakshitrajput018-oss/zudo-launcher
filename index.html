@@ -1,169 +1,194 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Zudo Launcher | The Ultimate Minecraft Experience</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <script src="https://unpkg.com/lucide@0.321.0"></script>
+<title>Zudo Launcher</title>
 
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet" />
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<script src="https://unpkg.com/lucide@latest"></script>
 
-    <style>
-        body {
-            font-family: 'Inter', sans-serif;
-            background: #020202;
-            color: white;
-            overflow-x: hidden;
-        }
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 
-        html {
-            scroll-behavior: smooth;
-        }
+<style>
 
-        ::-webkit-scrollbar {
-            width: 8px;
-        }
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
 
-        ::-webkit-scrollbar-thumb {
-            background: #00f2ff;
-            border-radius: 10px;
-        }
+body{
+    font-family:'Inter',sans-serif;
+    background:#030303;
+    overflow-x:hidden;
+    color:white;
+}
 
-        .glass {
-            background: rgba(255,255,255,0.03);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(255,255,255,0.06);
-        }
+html{
+    scroll-behavior:smooth;
+}
 
-        .zudo-accent {
-            background: linear-gradient(135deg,#00f2ff,#0088ff);
-        }
+::-webkit-scrollbar{
+    width:8px;
+}
 
-        .text-glow {
-            text-shadow: 0 0 25px rgba(0,242,255,.5);
-        }
+::-webkit-scrollbar-thumb{
+    background:#00e1ff;
+    border-radius:10px;
+}
 
-        .logo-glow {
-            filter: drop-shadow(0 0 25px rgba(0,242,255,.35));
-        }
+.glass{
+    background:rgba(255,255,255,0.03);
+    backdrop-filter:blur(14px);
+    border:1px solid rgba(255,255,255,0.06);
+}
 
-        .download-card:hover {
-            transform: translateY(-5px);
-            border-color: rgba(0,242,255,.4);
-        }
+.gradient{
+    background:linear-gradient(135deg,#00e1ff,#0066ff);
+}
 
-        .reveal {
-            opacity: 0;
-            transform: translateY(40px);
-            transition: all 1s cubic-bezier(0.16,1,0.3,1);
-        }
+.glow{
+    box-shadow:0 0 40px rgba(0,225,255,.35);
+}
 
-        .reveal.active {
-            opacity: 1;
-            transform: translateY(0);
-        }
+.text-glow{
+    text-shadow:0 0 25px rgba(0,225,255,.5);
+}
 
-        @keyframes float {
-            0% { transform: translateY(0px); }
-            50% { transform: translateY(-10px); }
-            100% { transform: translateY(0px); }
-        }
+.fade-up{
+    opacity:0;
+    transform:translateY(40px);
+    transition:all 1s cubic-bezier(.16,1,.3,1);
+}
 
-        .animate-float {
-            animation: float 4s ease-in-out infinite;
-        }
-    </style>
+.fade-up.active{
+    opacity:1;
+    transform:translateY(0);
+}
+
+.card-hover{
+    transition:all .4s ease;
+}
+
+.card-hover:hover{
+    transform:translateY(-8px);
+    border-color:rgba(0,225,255,.3);
+}
+
+@keyframes float{
+    0%{transform:translateY(0px);}
+    50%{transform:translateY(-12px);}
+    100%{transform:translateY(0px);}
+}
+
+.float{
+    animation:float 4s ease-in-out infinite;
+}
+
+.hero-bg{
+    position:absolute;
+    inset:0;
+    background:
+    radial-gradient(circle at top left, rgba(0,225,255,.15), transparent 35%),
+    radial-gradient(circle at bottom right, rgba(0,80,255,.15), transparent 35%);
+}
+
+</style>
 </head>
+
 <body>
 
 <div id="root"></div>
 
 <script type="text/babel">
 
-const { useEffect, useRef, useState } = React;
+const {useEffect,useRef,useState}=React;
 
-const SnowEffect = () => {
-    const canvasRef = useRef(null);
+const SnowEffect=()=>{
 
-    useEffect(() => {
-        const canvas = canvasRef.current;
-        const ctx = canvas.getContext("2d");
+    const canvasRef=useRef(null);
 
-        let particles = [];
+    useEffect(()=>{
+
+        const canvas=canvasRef.current;
+        const ctx=canvas.getContext("2d");
+
+        let particles=[];
         let animationFrame;
 
-        const resize = () => {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
+        const resize=()=>{
+            canvas.width=window.innerWidth;
+            canvas.height=window.innerHeight;
         };
 
-        class Snowflake {
-            constructor() {
+        class Snow{
+            constructor(){
                 this.reset();
             }
 
-            reset() {
-                this.x = Math.random() * canvas.width;
-                this.y = Math.random() * -canvas.height;
-                this.size = Math.random() * 3 + 1;
-                this.speed = Math.random() * 1 + 0.5;
-                this.opacity = Math.random() * 0.5 + 0.2;
+            reset(){
+                this.x=Math.random()*canvas.width;
+                this.y=Math.random()*-canvas.height;
+                this.size=Math.random()*3+1;
+                this.speed=Math.random()*1.2+0.5;
+                this.opacity=Math.random()*0.5+0.2;
             }
 
-            update() {
-                this.y += this.speed;
+            update(){
+                this.y+=this.speed;
 
-                if (this.y > canvas.height) {
+                if(this.y>canvas.height){
                     this.reset();
                 }
             }
 
-            draw() {
-                ctx.fillStyle = `rgba(255,255,255,${this.opacity})`;
-
+            draw(){
                 ctx.beginPath();
-                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fillStyle=`rgba(255,255,255,${this.opacity})`;
+                ctx.arc(this.x,this.y,this.size,0,Math.PI*2);
                 ctx.fill();
             }
         }
 
-        const init = () => {
+        const init=()=>{
             resize();
 
-            particles = Array.from(
-                { length: 120 },
-                () => new Snowflake()
+            particles=Array.from(
+                {length:140},
+                ()=>new Snow()
             );
         };
 
-        const animate = () => {
+        const animate=()=>{
+
             ctx.clearRect(0,0,canvas.width,canvas.height);
 
-            particles.forEach(p => {
+            particles.forEach(p=>{
                 p.update();
                 p.draw();
             });
 
-            animationFrame = requestAnimationFrame(animate);
+            animationFrame=requestAnimationFrame(animate);
         };
 
         init();
         animate();
 
-        window.addEventListener("resize", resize);
+        window.addEventListener("resize",resize);
 
-        return () => {
-            window.removeEventListener("resize", resize);
+        return()=>{
             cancelAnimationFrame(animationFrame);
+            window.removeEventListener("resize",resize);
         };
-    }, []);
 
-    return (
+    },[]);
+
+    return(
         <canvas
             ref={canvasRef}
             className="fixed top-0 left-0 w-full h-full pointer-events-none z-0 opacity-40"
@@ -171,174 +196,205 @@ const SnowEffect = () => {
     );
 };
 
-const useScrollReveal = () => {
-    const ref = useRef(null);
+const useReveal=()=>{
 
-    useEffect(() => {
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
+    const ref=useRef(null);
+
+    useEffect(()=>{
+
+        const observer=new IntersectionObserver(entries=>{
+
+            entries.forEach(entry=>{
+
                 if(entry.isIntersecting){
                     entry.target.classList.add("active");
                 }
+
             });
+
         });
 
         if(ref.current){
             observer.observe(ref.current);
         }
 
-        return () => {
+        return()=>{
             if(ref.current){
                 observer.unobserve(ref.current);
             }
         };
-    }, []);
+
+    },[]);
 
     return ref;
 };
 
-const Navbar = ({ currentPage, setCurrentPage }) => {
+const Navbar=({page,setPage})=>{
 
-    return (
-        <nav className="fixed top-0 w-full z-50 glass py-4">
-            <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
+    return(
+        <nav className="fixed top-0 w-full z-50 glass border-b border-white/5">
+
+            <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
 
                 <div
-                    onClick={() => setCurrentPage("home")}
+                    onClick={()=>setPage("home")}
                     className="flex items-center gap-4 cursor-pointer"
                 >
+
                     <img
                         src="logo.png"
-                        className="w-12 h-12 rounded-xl"
+                        className="w-12 h-12 rounded-2xl glow"
                     />
 
-                    <span className="text-2xl font-black uppercase tracking-tight">
+                    <h1 className="text-2xl font-black tracking-tight uppercase">
                         Zudo <span className="text-cyan-400">Launcher</span>
-                    </span>
+                    </h1>
+
                 </div>
 
-                <div className="flex items-center gap-6 uppercase text-sm font-bold">
+                <div className="flex items-center gap-6">
 
                     <button
-                        onClick={() => setCurrentPage("home")}
-                        className="hover:text-cyan-400 transition"
+                        onClick={()=>setPage("home")}
+                        className="font-bold uppercase hover:text-cyan-400 transition"
                     >
                         Home
                     </button>
 
                     <button
-                        onClick={() => setCurrentPage("download")}
-                        className="zudo-accent text-black px-6 py-2 rounded-full font-black hover:scale-105 transition"
+                        onClick={()=>setPage("download")}
+                        className="gradient text-black px-6 py-3 rounded-full font-black hover:scale-105 transition"
                     >
                         Download
                     </button>
 
                 </div>
+
             </div>
+
         </nav>
     );
 };
 
-const Hero = ({ setCurrentPage }) => {
+const Hero=({setPage})=>{
 
-    const revealRef = useScrollReveal();
+    const ref=useReveal();
 
-    return (
-        <section className="min-h-screen flex items-center justify-center px-6 relative">
+    return(
+        <section className="relative min-h-screen flex items-center justify-center px-6 overflow-hidden">
+
+            <div className="hero-bg"></div>
 
             <div
-                ref={revealRef}
-                className="reveal text-center relative z-10 max-w-5xl"
+                ref={ref}
+                className="fade-up active text-center relative z-10 max-w-5xl"
             >
 
                 <img
                     src="logo.png"
-                    className="w-52 h-52 mx-auto mb-10 rounded-[40px] logo-glow animate-float"
+                    className="w-52 h-52 md:w-64 md:h-64 mx-auto mb-10 rounded-[40px] glow float"
                 />
 
-                <h1 className="text-6xl md:text-8xl font-black tracking-tighter mb-8">
-                    THE NEW <br />
+                <h1 className="text-6xl md:text-8xl font-black leading-none tracking-tighter mb-8">
+
+                    THE NEW <br/>
+
                     <span className="text-cyan-400 text-glow italic">
                         STANDARD.
                     </span>
+
                 </h1>
 
                 <p className="text-xl text-gray-400 max-w-2xl mx-auto mb-12">
-                    Fast. Lightweight. Optimized for the best Minecraft experience.
+
+                    Fast. Lightweight. Beautiful.  
+                    Designed for the ultimate Minecraft experience.
+
                 </p>
 
                 <button
-                    onClick={() => setCurrentPage("download")}
-                    className="zudo-accent px-14 py-5 rounded-2xl text-black font-black text-xl hover:scale-105 transition"
+                    onClick={()=>setPage("download")}
+                    className="gradient px-14 py-5 rounded-2xl text-black text-xl font-black hover:scale-105 transition glow"
                 >
                     DOWNLOAD NOW
                 </button>
 
             </div>
+
         </section>
     );
 };
 
-const Features = () => {
+const Features=()=>{
 
-    const features = [
+    const features=[
         {
-            title: "Pure Speed",
-            desc: "Optimized for maximum FPS and fast startup.",
-            icon: "zap"
+            title:"Pure Speed",
+            desc:"Optimized startup and performance.",
+            icon:"zap"
         },
         {
-            title: "Zero Lag",
-            desc: "Minimal resource usage while gaming.",
-            icon: "activity"
+            title:"Zero Lag",
+            desc:"Low resource usage for better FPS.",
+            icon:"activity"
         },
         {
-            title: "Universal",
-            desc: "Supports all major Minecraft versions.",
-            icon: "layers"
+            title:"Secure",
+            desc:"Safe and stable launcher environment.",
+            icon:"shield-check"
         },
         {
-            title: "Secured",
-            desc: "Safe and stable launcher experience.",
-            icon: "shield-check"
+            title:"Modern UI",
+            desc:"Clean interface with smooth animations.",
+            icon:"layout-dashboard"
         }
     ];
 
-    return (
+    return(
+
         <section className="py-32 px-6">
 
             <div className="max-w-7xl mx-auto">
 
-                <h2 className="text-5xl font-black mb-20 text-center uppercase">
+                <h2 className="text-5xl md:text-6xl font-black uppercase text-center mb-20">
+
                     Built To <span className="text-cyan-400">Perform</span>
+
                 </h2>
 
                 <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
 
-                    {features.map((feature, i) => {
+                    {features.map((f,i)=>{
 
-                        const ref = useScrollReveal();
+                        const ref=useReveal();
 
-                        return (
+                        return(
+
                             <div
                                 key={i}
                                 ref={ref}
-                                className="reveal glass p-10 rounded-[35px]"
+                                className="fade-up glass p-10 rounded-[35px] card-hover"
                             >
 
-                                <div className="w-16 h-16 zudo-accent rounded-2xl flex items-center justify-center mb-8">
-                                    <i data-lucide={feature.icon} className="text-black w-8 h-8"></i>
+                                <div className="w-16 h-16 gradient rounded-2xl flex items-center justify-center mb-8 glow">
+
+                                    <i
+                                        data-lucide={f.icon}
+                                        className="w-8 h-8 text-black"
+                                    ></i>
+
                                 </div>
 
                                 <h3 className="text-3xl font-black mb-5">
-                                    {feature.title}
+                                    {f.title}
                                 </h3>
 
                                 <p className="text-gray-400">
-                                    {feature.desc}
+                                    {f.desc}
                                 </p>
 
                             </div>
+
                         );
 
                     })}
@@ -348,74 +404,82 @@ const Features = () => {
             </div>
 
         </section>
+
     );
 };
 
-const About = () => {
+const About=()=>{
 
-    const ref = useScrollReveal();
+    const ref=useReveal();
 
-    return (
+    return(
+
         <section className="py-32 px-6">
 
             <div
                 ref={ref}
-                className="reveal max-w-5xl mx-auto text-center"
+                className="fade-up max-w-5xl mx-auto text-center"
             >
 
-                <h2 className="text-5xl md:text-7xl font-black uppercase mb-12">
+                <h2 className="text-5xl md:text-6xl font-black uppercase mb-12">
+
                     About <span className="text-cyan-400">Zudo</span>
+
                 </h2>
 
                 <p className="text-xl text-gray-400 leading-relaxed">
-                    Zudo Launcher is designed to provide a fast, stable,
-                    and smooth Minecraft experience for every player.
-                    Our focus is performance, simplicity, and a clean interface
-                    without unnecessary clutter.
+
+                    Zudo Launcher is designed to provide a fast,
+                    stable, and smooth Minecraft experience for every player.
+                    We focus on performance, simplicity, modern design,
+                    and regular improvements for the community.
+
                 </p>
 
             </div>
 
         </section>
+
     );
 };
 
-const DownloadPage = () => {
+const DownloadPage=()=>{
 
-    const [selectedOS, setSelectedOS] = useState("windows");
+    const [selected,setSelected]=useState("windows");
 
-    const platforms = [
+    const platforms=[
         {
-            id: "windows",
-            name: "Windows",
-            icon: "monitor",
-            available: true
+            id:"windows",
+            name:"Windows",
+            icon:"monitor",
+            available:true
         },
         {
-            id: "macos",
-            name: "macOS",
-            icon: "apple",
-            available: false
+            id:"macos",
+            name:"macOS",
+            icon:"apple",
+            available:false
         },
         {
-            id: "linux",
-            name: "Linux",
-            icon: "terminal",
-            available: false
+            id:"linux",
+            name:"Linux",
+            icon:"terminal",
+            available:false
         }
     ];
 
-    const handleDownload = (platform) => {
+    const handleDownload=(platform)=>{
 
         if(!platform.available){
-            alert(`${platform.name} version is coming soon.`);
+
+            alert(platform.name+" version is coming soon.");
             return;
         }
 
-        const link = document.createElement("a");
+        const link=document.createElement("a");
 
-        link.href = "Zudo Launcher Setup 1.0.2.exe";
-        link.download = "Zudo Launcher Setup 1.0.2.exe";
+        link.href="./zudolaunchersetup.exe";
+        link.download="zudolaunchersetup.exe";
 
         document.body.appendChild(link);
 
@@ -424,43 +488,51 @@ const DownloadPage = () => {
         document.body.removeChild(link);
     };
 
-    return (
-        <div className="pt-36 pb-20 px-6 min-h-screen">
+    return(
+
+        <section className="pt-36 pb-24 px-6 min-h-screen">
 
             <div className="max-w-7xl mx-auto">
 
                 <div className="text-center mb-20">
 
                     <h1 className="text-6xl font-black uppercase mb-6">
+
                         Download <span className="text-cyan-400">Zudo</span>
+
                     </h1>
 
                     <p className="text-gray-400 text-xl">
-                        Select your operating system below.
+                        Choose your operating system below.
                     </p>
 
                 </div>
 
                 <div className="grid lg:grid-cols-3 gap-8">
 
-                    {platforms.map((platform) => (
+                    {platforms.map(platform=>(
 
                         <div
                             key={platform.id}
-                            onClick={() => setSelectedOS(platform.id)}
-                            className={`download-card glass p-10 rounded-[35px] border-2 transition-all cursor-pointer ${
-                                selectedOS === platform.id
-                                    ? "border-cyan-400"
-                                    : "border-transparent"
+                            onClick={()=>setSelected(platform.id)}
+                            className={`glass p-10 rounded-[35px] border-2 cursor-pointer card-hover ${
+                                selected===platform.id
+                                ? "border-cyan-400"
+                                : "border-transparent"
                             }`}
                         >
 
                             <div className={`w-16 h-16 rounded-2xl flex items-center justify-center mb-8 ${
                                 platform.available
-                                    ? "zudo-accent text-black"
-                                    : "bg-white/10 text-white"
+                                ? "gradient text-black glow"
+                                : "bg-white/10 text-white"
                             }`}>
-                                <i data-lucide={platform.icon} className="w-8 h-8"></i>
+
+                                <i
+                                    data-lucide={platform.icon}
+                                    className="w-8 h-8"
+                                ></i>
+
                             </div>
 
                             <h2 className="text-3xl font-black mb-4">
@@ -468,25 +540,29 @@ const DownloadPage = () => {
                             </h2>
 
                             <p className="text-gray-400 mb-8">
+
                                 {platform.available
-                                    ? "Available Now"
-                                    : "Coming Soon"}
+                                ? "Available Now"
+                                : "Coming Soon"}
+
                             </p>
 
                             <button
-                                onClick={(e) => {
+                                onClick={(e)=>{
                                     e.stopPropagation();
                                     handleDownload(platform);
                                 }}
                                 className={`w-full py-5 rounded-2xl font-black transition ${
                                     platform.available
-                                        ? "zudo-accent text-black hover:scale-105"
-                                        : "bg-white/10 text-white/50"
+                                    ? "gradient text-black hover:scale-105 glow"
+                                    : "bg-white/10 text-white/50"
                                 }`}
                             >
+
                                 {platform.available
-                                    ? "DOWNLOAD NOW"
-                                    : "COMING SOON"}
+                                ? "DOWNLOAD NOW"
+                                : "COMING SOON"}
+
                             </button>
 
                         </div>
@@ -497,38 +573,44 @@ const DownloadPage = () => {
 
             </div>
 
-        </div>
+        </section>
+
     );
 };
 
-const Footer = () => (
-    <footer className="py-16 border-t border-white/5">
+const Footer=()=>{
 
-        <div className="max-w-7xl mx-auto px-6 text-center">
+    return(
 
-            <img
-                src="logo.png"
-                className="w-14 h-14 mx-auto mb-6 rounded-2xl"
-            />
+        <footer className="border-t border-white/5 py-16">
 
-            <h2 className="text-3xl font-black uppercase mb-4">
-                Zudo Launcher
-            </h2>
+            <div className="max-w-7xl mx-auto px-6 text-center">
 
-            <p className="text-gray-500">
-                © 2026 Zudo Launcher. All rights reserved.
-            </p>
+                <img
+                    src="logo.png"
+                    className="w-14 h-14 mx-auto mb-6 rounded-2xl glow"
+                />
 
-        </div>
+                <h2 className="text-3xl font-black uppercase mb-4">
+                    Zudo Launcher
+                </h2>
 
-    </footer>
-);
+                <p className="text-gray-500">
+                    © 2026 Zudo Launcher. All rights reserved.
+                </p>
 
-const App = () => {
+            </div>
 
-    const [currentPage, setCurrentPage] = useState("home");
+        </footer>
 
-    useEffect(() => {
+    );
+};
+
+const App=()=>{
+
+    const [page,setPage]=useState("home");
+
+    useEffect(()=>{
 
         if(window.lucide){
             window.lucide.createIcons();
@@ -536,41 +618,45 @@ const App = () => {
 
         window.scrollTo(0,0);
 
-    }, [currentPage]);
+    },[page]);
 
-    return (
-        <div className="min-h-screen bg-[#020202] relative">
+    return(
 
-            <SnowEffect />
+        <div className="relative min-h-screen bg-[#030303]">
+
+            <SnowEffect/>
 
             <Navbar
-                currentPage={currentPage}
-                setCurrentPage={setCurrentPage}
+                page={page}
+                setPage={setPage}
             />
 
             <div className="relative z-10">
 
-                {currentPage === "home" ? (
+                {page==="home" ? (
                     <>
-                        <Hero setCurrentPage={setCurrentPage} />
-                        <Features />
-                        <About />
+                        <Hero setPage={setPage}/>
+                        <Features/>
+                        <About/>
                     </>
                 ) : (
-                    <DownloadPage />
+                    <DownloadPage/>
                 )}
 
             </div>
 
-            <Footer />
+            <Footer/>
 
         </div>
+
     );
 };
 
-const root = ReactDOM.createRoot(document.getElementById("root"));
+const root=ReactDOM.createRoot(
+    document.getElementById("root")
+);
 
-root.render(<App />);
+root.render(<App/>);
 
 </script>
 
