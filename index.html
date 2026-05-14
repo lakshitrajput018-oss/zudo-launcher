@@ -98,6 +98,34 @@ html{
     radial-gradient(circle at bottom right, rgba(0,80,255,.15), transparent 35%);
 }
 
+.site-bg{
+    position:fixed;
+    inset:0;
+    z-index:0;
+    background-image:url('bg.png');
+    background-size:cover;
+    background-position:center;
+    background-repeat:no-repeat;
+    opacity:0.95;
+}
+
+.site-bg::after{
+    content:'';
+    position:absolute;
+    inset:0;
+    background:
+        radial-gradient(ellipse at center, transparent 30%, rgba(0,0,0,0.85) 100%),
+        linear-gradient(to bottom, rgba(0,0,0,0.5) 0%, transparent 15%, transparent 85%, rgba(0,0,0,0.5) 100%),
+        linear-gradient(to right, rgba(0,0,0,0.5) 0%, transparent 15%, transparent 85%, rgba(0,0,0,0.5) 100%);
+}
+
+.bg-overlay{
+    position:fixed;
+    inset:0;
+    z-index:0;
+    background:rgba(3,3,3,0.55);
+}
+
 </style>
 </head>
 
@@ -620,6 +648,9 @@ const App=()=>{
     return(
 
         <div className="relative min-h-screen bg-[#030303]">
+
+            <div className="site-bg"></div>
+            <div className="bg-overlay"></div>
 
             <SnowEffect/>
 
