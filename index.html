@@ -471,20 +471,17 @@ const DownloadPage=()=>{
     const handleDownload=(platform)=>{
 
         if(!platform.available){
-
             alert(platform.name+" version is coming soon.");
             return;
         }
 
         const link=document.createElement("a");
 
-        link.href="./zudolaunchersetup.exe";
+        link.href="https://github.com/lakshitrajput018-oss/zudo-launcher/releases/download/v1.0/zudolaunchersetup.exe";
         link.download="zudolaunchersetup.exe";
 
         document.body.appendChild(link);
-
         link.click();
-
         document.body.removeChild(link);
     };
 
