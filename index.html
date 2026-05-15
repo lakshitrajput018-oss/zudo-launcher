@@ -103,16 +103,115 @@ html{scroll-behavior:smooth;}
     inset:0;
     z-index:999;
     pointer-events:none;
-    background:rgba(180,220,255,0.18);
+    background:rgba(180,220,255,0.22);
     opacity:0;
+}
+
+/* ── Loading Screen ── */
+#loadingScreen{
+    position:fixed;
+    inset:0;
+    z-index:9999;
+    background:#030303;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap:32px;
+    transition:opacity 0.6s ease;
+}
+
+#loadingScreen.hide{
+    opacity:0;
+    pointer-events:none;
+}
+
+.loader-logo{
+    width:100px;
+    height:100px;
+    object-fit:contain;
+    filter:drop-shadow(0 0 24px rgba(0,225,255,0.7));
+    animation:float 3s ease-in-out infinite;
+}
+
+.loader-ring{
+    position:relative;
+    width:140px;
+    height:140px;
+    margin-top:-125px;
+}
+
+.loader-ring svg{
+    width:140px;
+    height:140px;
+    transform:rotate(-90deg);
+}
+
+.loader-ring circle{
+    fill:none;
+    stroke-width:3;
+    stroke-linecap:round;
+}
+
+.loader-ring .track{
+    stroke:rgba(255,255,255,0.06);
+    stroke-dasharray:380;
+    stroke-dashoffset:0;
+}
+
+.loader-ring .fill{
+    stroke:url(#loaderGrad);
+    stroke-dasharray:380;
+    stroke-dashoffset:380;
+    animation:loaderSpin 1.6s ease-in-out infinite;
+    filter:drop-shadow(0 0 6px #00e1ff);
+}
+
+@keyframes loaderSpin{
+    0%{stroke-dashoffset:380;}
+    50%{stroke-dashoffset:80;}
+    100%{stroke-dashoffset:380;transform:rotate(360deg);}
+}
+
+.loader-text{
+    font-size:13px;
+    font-weight:800;
+    letter-spacing:0.3em;
+    text-transform:uppercase;
+    color:rgba(255,255,255,0.4);
+    margin-top:16px;
+}
+
+.loader-text span{
+    color:#00e1ff;
 }
 
 </style>
 </head>
 <body>
 
+<!-- Loading Screen -->
+<div id="loadingScreen">
+    <div style="position:relative;display:flex;align-items:center;justify-content:center;width:140px;height:140px;">
+        <div class="loader-ring">
+            <svg viewBox="0 0 140 140">
+                <defs>
+                    <linearGradient id="loaderGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" style="stop-color:#00e1ff"/>
+                        <stop offset="100%" style="stop-color:#0066ff"/>
+                    </linearGradient>
+                </defs>
+                <circle class="track" cx="70" cy="70" r="60"/>
+                <circle class="fill" cx="70" cy="70" r="60"/>
+            </svg>
+        </div>
+        <img src="logo.png" class="loader-logo" style="position:absolute;width:72px;height:72px;object-fit:contain;"/>
+    </div>
+    <p class="loader-text">Loading <span>Zudo</span> Launcher...</p>
+</div>
+
 <div id="root"></div>
-<canvas id="thunderCanvas" style="position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:2;opacity:0.75;"></canvas>
+<canvas id="thunderCanvas" style="position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:2;opacity:0.8;"></canvas>
 <div id="thunderFlash"></div>
 
 <script type="text/babel">
@@ -139,14 +238,14 @@ const ThunderEffect=()=>{
             ctx.moveTo(x1,y1);
             ctx.lineTo(mx,my);
             ctx.lineTo(x2,y2);
-            ctx.strokeStyle=`rgba(160,220,255,${0.18*depth})`;
-            ctx.lineWidth=depth*0.9;
-            ctx.shadowBlur=16;
+            ctx.strokeStyle=`rgba(180,230,255,${0.22*depth})`;
+            ctx.lineWidth=depth*1.0;
+            ctx.shadowBlur=20;
             ctx.shadowColor="#00e1ff";
             ctx.stroke();
-            if(branches>0&&Math.random()>0.45){
-                const bx=mx+(Math.random()-0.5)*150;
-                const by=my+Math.random()*100;
+            if(branches>0&&Math.random()>0.4){
+                const bx=mx+(Math.random()-0.5)*160;
+                const by=my+Math.random()*110;
                 drawBolt(mx,my,bx,by,0,depth-1);
             }
             drawBolt(x1,y1,mx,my,branches-1,depth-1);
@@ -154,18 +253,19 @@ const ThunderEffect=()=>{
         };
 
         let timer;
+        /* faster: 1.5s–4s gap */
         const strike=()=>{
             ctx.clearRect(0,0,W,H);
             const x=Math.random()*W;
             drawBolt(x,0,x+(Math.random()-0.5)*220,H*0.55+Math.random()*H*0.35,3,5);
             flash.style.opacity="1";
             flash.style.transition="opacity 0.04s";
-            setTimeout(()=>{flash.style.transition="opacity 0.35s";flash.style.opacity="0";},55);
-            setTimeout(()=>ctx.clearRect(0,0,W,H),220);
-            timer=setTimeout(strike,5000+Math.random()*9000);
+            setTimeout(()=>{flash.style.transition="opacity 0.3s";flash.style.opacity="0";},60);
+            setTimeout(()=>ctx.clearRect(0,0,W,H),230);
+            timer=setTimeout(strike,1500+Math.random()*2500);
         };
 
-        timer=setTimeout(strike,2500+Math.random()*3000);
+        timer=setTimeout(strike,800+Math.random()*1200);
         return()=>{clearTimeout(timer);window.removeEventListener("resize",resize);};
     },[]);
     return null;
@@ -184,9 +284,9 @@ const SnowEffect=()=>{
             reset(){
                 this.x=Math.random()*canvas.width;
                 this.y=Math.random()*-canvas.height;
-                this.size=Math.random()*3+1;
-                this.speed=Math.random()*1.2+0.5;
-                this.opacity=Math.random()*0.5+0.2;
+                this.size=Math.random()*4+1.5;
+                this.speed=Math.random()*1.5+0.6;
+                this.opacity=Math.random()*0.4+0.6; /* brighter: 0.6–1.0 */
             }
             update(){this.y+=this.speed;if(this.y>canvas.height)this.reset();}
             draw(){
@@ -196,7 +296,7 @@ const SnowEffect=()=>{
                 ctx.fill();
             }
         }
-        const init=()=>{resize();particles=Array.from({length:140},()=>new Snow());};
+        const init=()=>{resize();particles=Array.from({length:220},()=>new Snow());};
         const animate=()=>{
             ctx.clearRect(0,0,canvas.width,canvas.height);
             particles.forEach(p=>{p.update();p.draw();});
@@ -206,7 +306,8 @@ const SnowEffect=()=>{
         window.addEventListener("resize",resize);
         return()=>{cancelAnimationFrame(animationFrame);window.removeEventListener("resize",resize);};
     },[]);
-    return <canvas ref={canvasRef} className="fixed top-0 left-0 w-full h-full pointer-events-none z-0 opacity-40"/>;
+    /* full opacity on canvas itself */
+    return <canvas ref={canvasRef} className="fixed top-0 left-0 w-full h-full pointer-events-none z-0" style={{opacity:1}}/>;
 };
 
 /* ─── Reveal ─── */
@@ -234,7 +335,7 @@ const Navbar=()=>(
     <nav className="fixed top-0 w-full z-50 glass border-b border-white/5">
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
             <div className="flex items-center gap-4 cursor-pointer" onClick={()=>window.scrollTo({top:0,behavior:'smooth'})}>
-                <img src="logo.png" className="w-12 h-12 rounded-2xl glow"/>
+                <img src="logo.png" className="w-12 h-12 glow" style={{borderRadius:0,objectFit:'contain'}}/>
                 <h1 className="text-2xl font-black tracking-tight uppercase">
                     Zudo <span className="text-cyan-400">Launcher</span>
                 </h1>
@@ -254,7 +355,8 @@ const Hero=()=>{
         <section className="relative min-h-screen flex items-center justify-center px-6 overflow-hidden">
             <div className="hero-bg"></div>
             <div ref={ref} className="fade-up active text-center relative z-10 max-w-5xl">
-                <img src="logo.png" className="w-52 h-52 md:w-64 md:h-64 mx-auto mb-10 rounded-[40px] glow float"/>
+                <img src="logo.png" className="w-52 h-52 md:w-64 md:h-64 mx-auto mb-10 float"
+                    style={{objectFit:'contain',filter:'drop-shadow(0 0 30px rgba(0,225,255,0.5))'}}/>
                 <h1 className="text-6xl md:text-8xl font-black leading-none tracking-tighter mb-8">
                     THE NEW <br/>
                     <span className="text-cyan-400 text-glow italic">STANDARD.</span>
@@ -325,7 +427,7 @@ const About=()=>{
 const Footer=()=>(
     <footer className="border-t border-white/5 py-16">
         <div className="max-w-7xl mx-auto px-6 text-center">
-            <img src="logo.png" className="w-14 h-14 mx-auto mb-6 rounded-2xl glow"/>
+            <img src="logo.png" className="w-14 h-14 mx-auto mb-6" style={{objectFit:'contain',filter:'drop-shadow(0 0 18px rgba(0,225,255,0.5))'}}/>
             <h2 className="text-3xl font-black uppercase mb-4">Zudo Launcher</h2>
             <p className="text-gray-500">© 2026 Zudo Launcher. All rights reserved.</p>
         </div>
@@ -335,11 +437,12 @@ const Footer=()=>(
 /* ─── App ─── */
 const App=()=>{
     useEffect(()=>{
-        document.body.style.opacity="0";
+        /* hide loader after page ready */
+        const loader=document.getElementById("loadingScreen");
         setTimeout(()=>{
-            document.body.style.transition="opacity 0.5s";
-            document.body.style.opacity="1";
-        },50);
+            loader.classList.add("hide");
+            setTimeout(()=>{loader.style.display="none";},650);
+        },1800);
         if(window.lucide)window.lucide.createIcons();
     },[]);
 
