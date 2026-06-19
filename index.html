@@ -1,470 +1,785 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="scroll-smooth">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Zudo Launcher</title>
-<script src="https://cdn.tailwindcss.com"></script>
-<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-<script src="https://unpkg.com/lucide@latest"></script>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-<style>
-
-*{margin:0;padding:0;box-sizing:border-box;}
-
-body{
-    font-family:'Inter',sans-serif;
-    background:#030303;
-    overflow-x:hidden;
-    color:white;
-}
-
-html{scroll-behavior:smooth;}
-
-::-webkit-scrollbar{width:8px;}
-::-webkit-scrollbar-thumb{background:#00e1ff;border-radius:10px;}
-
-.glass{
-    background:rgba(255,255,255,0.03);
-    backdrop-filter:blur(14px);
-    border:1px solid rgba(255,255,255,0.06);
-}
-
-.gradient{background:linear-gradient(135deg,#00e1ff,#0066ff);}
-.glow{box-shadow:0 0 40px rgba(0,225,255,.35);}
-.text-glow{text-shadow:0 0 25px rgba(0,225,255,.5);}
-
-.fade-up{
-    opacity:0;
-    transform:translateY(40px);
-    transition:all 1s cubic-bezier(.16,1,.3,1);
-}
-.fade-up.active{opacity:1;transform:translateY(0);}
-
-.card-hover{transition:all .4s ease;}
-.card-hover:hover{
-    transform:translateY(-8px);
-    border-color:rgba(0,225,255,.3);
-}
-
-@keyframes float{
-    0%{transform:translateY(0px);}
-    50%{transform:translateY(-12px);}
-    100%{transform:translateY(0px);}
-}
-.float{animation:float 4s ease-in-out infinite;}
-
-.hero-bg{
-    position:absolute;
-    inset:0;
-    background:
-        radial-gradient(circle at top left, rgba(0,225,255,.15), transparent 35%),
-        radial-gradient(circle at bottom right, rgba(0,80,255,.15), transparent 35%);
-}
-
-.site-bg{
-    position:fixed;
-    inset:0;
-    z-index:0;
-    background-image:url('bg.png');
-    background-size:cover;
-    background-position:center;
-    background-repeat:no-repeat;
-    opacity:0.95;
-}
-.site-bg::after{
-    content:'';
-    position:absolute;
-    inset:0;
-    background:
-        radial-gradient(ellipse at center, transparent 30%, rgba(0,0,0,0.85) 100%),
-        linear-gradient(to bottom, rgba(0,0,0,0.5) 0%, transparent 15%, transparent 85%, rgba(0,0,0,0.5) 100%),
-        linear-gradient(to right, rgba(0,0,0,0.5) 0%, transparent 15%, transparent 85%, rgba(0,0,0,0.5) 100%);
-}
-.bg-overlay{
-    position:fixed;
-    inset:0;
-    z-index:0;
-    background:rgba(3,3,3,0.55);
-}
-
-.page-transition{
-    animation:pageFadeIn 0.6s cubic-bezier(.16,1,.3,1) forwards;
-}
-@keyframes pageFadeIn{
-    from{opacity:0;transform:translateY(20px);}
-    to{opacity:1;transform:translateY(0);}
-}
-
-#thunderFlash{
-    position:fixed;
-    inset:0;
-    z-index:999;
-    pointer-events:none;
-    background:rgba(180,220,255,0.22);
-    opacity:0;
-}
-
-/* ── Loading Screen ── */
-#loadingScreen{
-    position:fixed;
-    inset:0;
-    z-index:9999;
-    background:#030303;
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    justify-content:center;
-    gap:32px;
-    transition:opacity 0.6s ease;
-}
-
-#loadingScreen.hide{
-    opacity:0;
-    pointer-events:none;
-}
-
-.loader-logo{
-    width:100px;
-    height:100px;
-    object-fit:contain;
-    filter:drop-shadow(0 0 24px rgba(0,225,255,0.7));
-    animation:float 3s ease-in-out infinite;
-}
-
-.loader-ring{
-    position:relative;
-    width:140px;
-    height:140px;
-    margin-top:-125px;
-}
-
-.loader-ring svg{
-    width:140px;
-    height:140px;
-    transform:rotate(-90deg);
-}
-
-.loader-ring circle{
-    fill:none;
-    stroke-width:3;
-    stroke-linecap:round;
-}
-
-.loader-ring .track{
-    stroke:rgba(255,255,255,0.06);
-    stroke-dasharray:380;
-    stroke-dashoffset:0;
-}
-
-.loader-ring .fill{
-    stroke:url(#loaderGrad);
-    stroke-dasharray:380;
-    stroke-dashoffset:380;
-    animation:loaderSpin 1.6s ease-in-out infinite;
-    filter:drop-shadow(0 0 6px #00e1ff);
-}
-
-@keyframes loaderSpin{
-    0%{stroke-dashoffset:380;}
-    50%{stroke-dashoffset:80;}
-    100%{stroke-dashoffset:380;transform:rotate(360deg);}
-}
-
-.loader-text{
-    font-size:13px;
-    font-weight:800;
-    letter-spacing:0.3em;
-    text-transform:uppercase;
-    color:rgba(255,255,255,0.4);
-    margin-top:16px;
-}
-
-.loader-text span{
-    color:#00e1ff;
-}
-
-</style>
-</head>
-<body>
-
-<!-- Loading Screen -->
-<div id="loadingScreen">
-    <div style="position:relative;display:flex;align-items:center;justify-content:center;width:140px;height:140px;">
-        <div class="loader-ring">
-            <svg viewBox="0 0 140 140">
-                <defs>
-                    <linearGradient id="loaderGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-                        <stop offset="0%" style="stop-color:#00e1ff"/>
-                        <stop offset="100%" style="stop-color:#0066ff"/>
-                    </linearGradient>
-                </defs>
-                <circle class="track" cx="70" cy="70" r="60"/>
-                <circle class="fill" cx="70" cy="70" r="60"/>
-            </svg>
-        </div>
-        <img src="logo.png" class="loader-logo" style="position:absolute;width:72px;height:72px;object-fit:contain;"/>
-    </div>
-    <p class="loader-text">Loading <span>Zudo</span> Launcher...</p>
-</div>
-
-<div id="root"></div>
-<canvas id="thunderCanvas" style="position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:2;opacity:0.8;"></canvas>
-<div id="thunderFlash"></div>
-
-<script type="text/babel">
-
-const {useEffect,useRef,useState}=React;
-
-/* ─── Thunder ─── */
-const ThunderEffect=()=>{
-    useEffect(()=>{
-        const canvas=document.getElementById("thunderCanvas");
-        const ctx=canvas.getContext("2d");
-        const flash=document.getElementById("thunderFlash");
-        let W,H;
-
-        const resize=()=>{W=canvas.width=window.innerWidth;H=canvas.height=window.innerHeight;};
-        resize();
-        window.addEventListener("resize",resize);
-
-        const drawBolt=(x1,y1,x2,y2,branches,depth)=>{
-            if(depth===0)return;
-            const mx=(x1+x2)/2+(Math.random()-0.5)*(Math.abs(x2-x1)*0.9);
-            const my=(y1+y2)/2+(Math.random()-0.5)*(Math.abs(y2-y1)*0.4);
-            ctx.beginPath();
-            ctx.moveTo(x1,y1);
-            ctx.lineTo(mx,my);
-            ctx.lineTo(x2,y2);
-            ctx.strokeStyle=`rgba(180,230,255,${0.22*depth})`;
-            ctx.lineWidth=depth*1.0;
-            ctx.shadowBlur=20;
-            ctx.shadowColor="#00e1ff";
-            ctx.stroke();
-            if(branches>0&&Math.random()>0.4){
-                const bx=mx+(Math.random()-0.5)*160;
-                const by=my+Math.random()*110;
-                drawBolt(mx,my,bx,by,0,depth-1);
-            }
-            drawBolt(x1,y1,mx,my,branches-1,depth-1);
-            drawBolt(mx,my,x2,y2,branches-1,depth-1);
-        };
-
-        let timer;
-        /* faster: 1.5s–4s gap */
-        const strike=()=>{
-            ctx.clearRect(0,0,W,H);
-            const x=Math.random()*W;
-            drawBolt(x,0,x+(Math.random()-0.5)*220,H*0.55+Math.random()*H*0.35,3,5);
-            flash.style.opacity="1";
-            flash.style.transition="opacity 0.04s";
-            setTimeout(()=>{flash.style.transition="opacity 0.3s";flash.style.opacity="0";},60);
-            setTimeout(()=>ctx.clearRect(0,0,W,H),230);
-            timer=setTimeout(strike,1500+Math.random()*2500);
-        };
-
-        timer=setTimeout(strike,800+Math.random()*1200);
-        return()=>{clearTimeout(timer);window.removeEventListener("resize",resize);};
-    },[]);
-    return null;
-};
-
-/* ─── Snow ─── */
-const SnowEffect=()=>{
-    const canvasRef=useRef(null);
-    useEffect(()=>{
-        const canvas=canvasRef.current;
-        const ctx=canvas.getContext("2d");
-        let particles=[],animationFrame;
-        const resize=()=>{canvas.width=window.innerWidth;canvas.height=window.innerHeight;};
-        class Snow{
-            constructor(){this.reset();}
-            reset(){
-                this.x=Math.random()*canvas.width;
-                this.y=Math.random()*-canvas.height;
-                this.size=Math.random()*4+1.5;
-                this.speed=Math.random()*1.5+0.6;
-                this.opacity=Math.random()*0.4+0.6; /* brighter: 0.6–1.0 */
-            }
-            update(){this.y+=this.speed;if(this.y>canvas.height)this.reset();}
-            draw(){
-                ctx.beginPath();
-                ctx.fillStyle=`rgba(255,255,255,${this.opacity})`;
-                ctx.arc(this.x,this.y,this.size,0,Math.PI*2);
-                ctx.fill();
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zudo Launcher — Launching Soon</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Inter & JetBrains Mono -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#f5f3ff',
+                            100: '#ede9fe',
+                            500: '#8b5cf6',
+                            600: '#7c3aed',
+                            700: '#6d28d9',
+                            DEFAULT: '#8b5cf6',
+                            neon: '#a78bfa',
+                            glow: '#3b82f6',
+                        }
+                    },
+                    animation: {
+                        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'float': 'float 6s ease-in-out infinite',
+                        'glow': 'glow 2s ease-in-out infinite alternate',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0px)' },
+                            '50%': { transform: 'translateY(-10px)' },
+                        },
+                        glow: {
+                            '0%': { boxShadow: '0 0 10px rgba(139, 92, 246, 0.2), 0 0 20px rgba(59, 130, 246, 0.1)' },
+                            '100%': { boxShadow: '0 0 25px rgba(139, 92, 246, 0.6), 0 0 40px rgba(59, 130, 246, 0.3)' },
+                        }
+                    }
+                }
             }
         }
-        const init=()=>{resize();particles=Array.from({length:220},()=>new Snow());};
-        const animate=()=>{
-            ctx.clearRect(0,0,canvas.width,canvas.height);
-            particles.forEach(p=>{p.update();p.draw();});
-            animationFrame=requestAnimationFrame(animate);
-        };
-        init();animate();
-        window.addEventListener("resize",resize);
-        return()=>{cancelAnimationFrame(animationFrame);window.removeEventListener("resize",resize);};
-    },[]);
-    /* full opacity on canvas itself */
-    return <canvas ref={canvasRef} className="fixed top-0 left-0 w-full h-full pointer-events-none z-0" style={{opacity:1}}/>;
-};
+    </script>
+    <style>
+        body {
+            background-color: #050508;
+            overflow-x: hidden;
+        }
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #09090e;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #252438;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #8b5cf6;
+        }
+        /* Glassmorphism utility */
+        .glass-panel {
+            background: rgba(13, 13, 22, 0.65);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .glass-panel-heavy {
+            background: rgba(10, 10, 18, 0.9);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(139, 92, 246, 0.15);
+        }
+        /* Glow text utility */
+        .glow-text {
+            text-shadow: 0 0 15px rgba(139, 92, 246, 0.5), 0 0 3px rgba(139, 92, 246, 0.3);
+        }
+        .glow-cyan {
+            text-shadow: 0 0 15px rgba(6, 182, 212, 0.5);
+        }
+        /* Background decorative grid */
+        .grid-bg {
+            background-image: 
+                linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+            background-size: 40px 40px;
+        }
+        /* Diagonal accent swipe effect */
+        .accent-swipe {
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0) 30%, rgba(139, 92, 246, 0.1) 50%, rgba(139, 92, 246, 0) 70%);
+            background-size: 200% 200%;
+            animation: swipe 6s linear infinite;
+        }
+        @keyframes swipe {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+    </style>
+</head>
+<body class="text-slate-100 font-sans antialiased relative selection:bg-brand/30 selection:text-brand-neon">
 
-/* ─── Reveal ─── */
-const useReveal=()=>{
-    const ref=useRef(null);
-    useEffect(()=>{
-        const observer=new IntersectionObserver(entries=>{
-            entries.forEach(entry=>{if(entry.isIntersecting)entry.target.classList.add("active");});
-        });
-        if(ref.current)observer.observe(ref.current);
-        return()=>{if(ref.current)observer.unobserve(ref.current);};
-    },[]);
-    return ref;
-};
+    <!-- Interactive Background Canvas -->
+    <canvas id="particleCanvas" class="fixed top-0 left-0 w-full h-full -z-10 pointer-events-none opacity-40"></style>
+    </canvas>
 
-/* ─── Navigate with fade ─── */
-const goTo=(url)=>{
-    document.body.style.transition="opacity 0.4s";
-    document.body.style.opacity="0";
-    setTimeout(()=>{window.location.href=url;},400);
-};
+    <!-- Deep Ambient Glow Spots -->
+    <div class="fixed top-[-20%] left-[-10%] w-[60vw] h-[60vw] rounded-full bg-brand/10 blur-[150px] -z-20 pointer-events-none"></div>
+    <div class="fixed bottom-[-20%] right-[-10%] w-[60vw] h-[60vw] rounded-full bg-blue-900/10 blur-[150px] -z-20 pointer-events-none"></div>
+    <div class="fixed top-[40%] left-[50%] -translate-x-1/2 -translate-y-1/2 w-[40vw] h-[40vw] rounded-full bg-violet-600/5 blur-[120px] -z-20 pointer-events-none"></div>
 
-/* ─── Navbar ─── */
-const Navbar=()=>(
-    <nav className="fixed top-0 w-full z-50 glass border-b border-white/5">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-            <div className="flex items-center gap-4 cursor-pointer" onClick={()=>window.scrollTo({top:0,behavior:'smooth'})}>
-                <img src="logo.png" className="w-12 h-12 glow" style={{borderRadius:0,objectFit:'contain'}}/>
-                <h1 className="text-2xl font-black tracking-tight uppercase">
-                    Zudo <span className="text-cyan-400">Launcher</span>
-                </h1>
+    <div class="grid-bg fixed inset-0 -z-15 opacity-60 pointer-events-none"></div>
+
+    <!-- Navigation -->
+    <nav class="sticky top-0 z-50 w-full glass-panel border-b border-white/5 px-6 py-4">
+        <div class="max-w-7xl mx-auto flex items-center justify-between">
+            <!-- Logo Section -->
+            <a href="#" class="flex items-center gap-3 group" onclick="playBeep(440, 'sine', 0.1)">
+                <div class="relative w-10 h-10 flex items-center justify-center bg-gradient-to-tr from-brand-600 to-indigo-500 rounded-xl shadow-lg shadow-brand/25 overflow-hidden transition-transform duration-300 group-hover:scale-105">
+                    <div class="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                    <!-- Custom SVG futuristic 'Z' Logo -->
+                    <svg class="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 6H5a2 2 0 00-2 2v8a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2z" class="opacity-30" />
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+                    </svg>
+                </div>
+                <span class="font-bold text-2xl tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-white via-slate-100 to-brand-neon font-mono">ZUDO</span>
+                <span class="text-xs bg-brand/20 border border-brand/40 px-2 py-0.5 rounded-full text-brand-neon font-medium font-mono uppercase tracking-widest">Revamp</span>
+            </a>
+
+            <!-- Navigation Links (Desktop) -->
+            <div class="hidden md:flex items-center gap-8">
+                <a href="#about" class="text-sm font-semibold text-slate-400 hover:text-white transition-colors duration-200" onclick="playBeep(400, 'triangle', 0.05)">About</a>
+                <a href="#fps-boost" class="text-sm font-semibold text-slate-400 hover:text-white transition-colors duration-200" onclick="playBeep(400, 'triangle', 0.05)">Performance</a>
+                <a href="#mod-manager" class="text-sm font-semibold text-slate-400 hover:text-white transition-colors duration-200" onclick="playBeep(400, 'triangle', 0.05)">Features</a>
+                <a href="#timeline" class="text-sm font-semibold text-slate-400 hover:text-white transition-colors duration-200" onclick="playBeep(400, 'triangle', 0.05)">Timeline</a>
             </div>
-            <div className="flex items-center gap-6">
-                <button onClick={()=>window.scrollTo({top:0,behavior:'smooth'})} className="font-bold uppercase hover:text-cyan-400 transition">Home</button>
-                <button onClick={()=>goTo("osselector.html")} className="gradient text-black px-6 py-3 rounded-full font-black hover:scale-105 transition">Download</button>
+
+            <!-- Beta Registration CTA -->
+            <div class="flex items-center gap-4">
+                <a href="#beta-cta" class="glass-panel border-white/10 hover:border-brand/50 hover:text-brand-neon px-4 py-2 rounded-xl text-sm font-semibold flex items-center gap-2 transition-all duration-300 transform hover:-translate-y-0.5 hover:shadow-[0_0_15px_rgba(139,92,246,0.3)]" onclick="playBeep(520, 'sine', 0.1)">
+                    <i class="fa-solid fa-user-plus text-xs"></i>
+                    <span>Beta Access</span>
+                </a>
             </div>
         </div>
     </nav>
-);
 
-/* ─── Hero ─── */
-const Hero=()=>{
-    const ref=useReveal();
-    return(
-        <section className="relative min-h-screen flex items-center justify-center px-6 overflow-hidden">
-            <div className="hero-bg"></div>
-            <div ref={ref} className="fade-up active text-center relative z-10 max-w-5xl">
-                <img src="logo.png" className="w-52 h-52 md:w-64 md:h-64 mx-auto mb-10 float"
-                    style={{objectFit:'contain',filter:'drop-shadow(0 0 30px rgba(0,225,255,0.5))'}}/>
-                <h1 className="text-6xl md:text-8xl font-black leading-none tracking-tighter mb-8">
-                    TRY OUR BETA <br/>
-                    <span className="text-cyan-400 text-glow italic">VERSION.</span>
-                </h1>
-                <p className="text-xl text-gray-400 max-w-2xl mx-auto mb-12">
-                    Fast. Lightweight. Beautiful. Designed for the ultimate Minecraft experience.
-                </p>
-                <button onClick={()=>goTo("osselector.html")} className="gradient px-14 py-5 rounded-2xl text-black text-xl font-black hover:scale-105 transition glow">
-                    DOWNLOAD NOW
-                </button>
+    <!-- Main Container -->
+    <main class="max-w-7xl mx-auto px-6 py-12 relative z-10">
+
+        <!-- Hero section / Countdown Banner -->
+        <section class="text-center py-10 md:py-16 relative overflow-hidden flex flex-col items-center">
+            
+            <!-- Animated Badge -->
+            <div class="inline-flex items-center gap-2 bg-white/5 border border-white/10 px-4 py-2 rounded-full mb-6 relative animate-float">
+                <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                <span class="text-xs md:text-sm font-semibold tracking-wider text-slate-300 font-mono uppercase">LAUNCH PHASE INITIATED</span>
+            </div>
+
+            <!-- Main Heading -->
+            <h1 class="text-4xl sm:text-6xl md:text-8xl font-black tracking-tight leading-tight max-w-5xl mb-6">
+                Redefining Your <br class="hidden sm:inline">
+                <span class="text-transparent bg-clip-text bg-gradient-to-r from-brand-neon via-indigo-400 to-cyan-400 glow-text">Minecraft Experience</span>
+            </h1>
+
+            <p class="text-slate-400 text-lg md:text-2xl max-w-3xl mb-12 leading-relaxed">
+                Zudo Launcher client revamp represents absolute optimization, premium custom-made cosmetics, an integrated live mod store, and revolutionary framerate boosts.
+            </p>
+
+            <!-- THE COUNTDOWN GRID -->
+            <div class="w-full max-w-4xl grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 mb-16 relative">
+                
+                <!-- Countdown: Days -->
+                <div class="glass-panel rounded-2xl p-6 md:p-8 flex flex-col items-center justify-center border-white/5 shadow-2xl relative overflow-hidden group hover:border-brand/40 transition-all duration-300">
+                    <div class="absolute inset-0 accent-swipe opacity-40"></div>
+                    <span id="days" class="text-5xl md:text-7xl font-extrabold font-mono text-white tracking-tight glow-text group-hover:scale-105 transition-transform">00</span>
+                    <span class="text-xs md:text-sm font-bold text-slate-500 uppercase tracking-widest mt-2 font-mono">Days</span>
+                </div>
+
+                <!-- Countdown: Hours -->
+                <div class="glass-panel rounded-2xl p-6 md:p-8 flex flex-col items-center justify-center border-white/5 shadow-2xl relative overflow-hidden group hover:border-brand/40 transition-all duration-300">
+                    <div class="absolute inset-0 accent-swipe opacity-40"></div>
+                    <span id="hours" class="text-5xl md:text-7xl font-extrabold font-mono text-white tracking-tight glow-text group-hover:scale-105 transition-transform">00</span>
+                    <span class="text-xs md:text-sm font-bold text-slate-500 uppercase tracking-widest mt-2 font-mono">Hours</span>
+                </div>
+
+                <!-- Countdown: Minutes -->
+                <div class="glass-panel rounded-2xl p-6 md:p-8 flex flex-col items-center justify-center border-white/5 shadow-2xl relative overflow-hidden group hover:border-brand/40 transition-all duration-300">
+                    <div class="absolute inset-0 accent-swipe opacity-40"></div>
+                    <span id="minutes" class="text-5xl md:text-7xl font-extrabold font-mono text-white tracking-tight glow-text group-hover:scale-105 transition-transform">00</span>
+                    <span class="text-xs md:text-sm font-bold text-slate-500 uppercase tracking-widest mt-2 font-mono">Minutes</span>
+                </div>
+
+                <!-- Countdown: Seconds -->
+                <div class="glass-panel rounded-2xl p-6 md:p-8 flex flex-col items-center justify-center border-white/5 shadow-2xl relative overflow-hidden group hover:border-brand/40 transition-all duration-300">
+                    <div class="absolute inset-0 accent-swipe opacity-40"></div>
+                    <span id="seconds" class="text-5xl md:text-7xl font-extrabold font-mono text-brand-neon tracking-tight glow-text group-hover:scale-105 transition-transform">00</span>
+                    <span class="text-xs md:text-sm font-bold text-slate-500 uppercase tracking-widest mt-2 font-mono">Seconds</span>
+                </div>
+
+            </div>
+
+            <!-- Beta Signup Banner Callout -->
+            <div id="beta-cta" class="w-full max-w-2xl glass-panel-heavy rounded-2xl p-6 md:p-8 border-brand/20 shadow-xl relative">
+                <h3 class="text-lg md:text-xl font-bold text-slate-100 mb-2 flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-bolt text-brand-neon animate-pulse"></i> Reserve Your Beta Username
+                </h3>
+                <p class="text-slate-400 text-sm mb-6">Securing your custom Minecraft IGN ensures elite VIP status, custom capes, and priority queue on relaunch day.</p>
+                
+                <form id="beta-form" class="flex flex-col sm:flex-row gap-3" onsubmit="handleBetaSubmit(event)">
+                    <div class="flex-1 relative">
+                        <input type="text" id="beta-username" required placeholder="Enter Minecraft IGN..." class="w-full bg-black/40 border border-white/10 hover:border-white/20 focus:border-brand focus:ring-1 focus:ring-brand rounded-xl py-3 px-4 pl-10 text-slate-100 placeholder-slate-500 text-sm outline-none transition-all duration-300">
+                        <i class="fa-solid fa-gamepad absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500"></i>
+                    </div>
+                    <button type="submit" class="bg-gradient-to-r from-brand-600 to-indigo-600 hover:from-brand hover:to-indigo-500 text-white font-bold py-3 px-6 rounded-xl text-sm transition-all duration-300 shadow-lg shadow-brand/20 flex items-center justify-center gap-2 transform hover:-translate-y-0.5">
+                        <span>Secure Account</span>
+                        <i class="fa-solid fa-arrow-right-long text-xs"></i>
+                    </button>
+                </form>
+                
+                <p class="text-slate-500 text-[11px] mt-3 font-mono">Free to register. Available for premium MC accounts. Safe and verified verification.</p>
+            </div>
+
+        </section>
+
+        <!-- Performance / FPS Boost Interactive Feature Section -->
+        <section id="fps-boost" class="py-16 border-t border-white/5">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+                
+                <!-- Left Details Text -->
+                <div class="lg:col-span-5 space-y-6">
+                    <span class="text-brand-neon text-sm font-extrabold uppercase tracking-widest font-mono">ENGINE ARCHITECTURE</span>
+                    <h2 class="text-3xl md:text-5xl font-black tracking-tight leading-tight">
+                        Experience Absolute <br> Smoothness.
+                    </h2>
+                    <p class="text-slate-400 leading-relaxed">
+                        With Zudo's proprietary rendering modifications engine built upon modern optimization methodologies, witness up to a **400% framerate boost** over native vanilla. Stutters, frame drops, and latency are completely eliminated.
+                    </p>
+
+                    <div class="space-y-4 pt-2">
+                        <div class="flex items-start gap-4">
+                            <div class="w-10 h-10 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center flex-shrink-0">
+                                <i class="fa-solid fa-microchip text-emerald-400"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-slate-200">Zero-Overhead Memory Allocation</h4>
+                                <p class="text-sm text-slate-400">Restructured garbage collection lowers memory spikes drastically.</p>
+                            </div>
+                        </div>
+
+                        <div class="flex items-start gap-4">
+                            <div class="w-10 h-10 rounded-lg bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center flex-shrink-0">
+                                <i class="fa-solid fa-wind text-cyan-400"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-slate-200">Asynchronous Chunk Loading</h4>
+                                <p class="text-sm text-slate-400">Zero stutters while generating and loading heavy chunk borders.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Interactive Comparison Block -->
+                <div class="lg:col-span-7">
+                    <div class="glass-panel p-6 rounded-3xl border-white/5 relative overflow-hidden">
+                        
+                        <div class="flex items-center justify-between mb-6">
+                            <div class="flex items-center gap-2">
+                                <span class="w-2.5 h-2.5 rounded-full bg-brand-neon"></span>
+                                <span class="text-xs font-bold font-mono text-slate-400 uppercase tracking-widest">FPS Comparison Slider</span>
+                            </div>
+                            <span class="text-xs text-slate-500 font-mono">Drag to check performance differences</span>
+                        </div>
+
+                        <!-- Main Screen Simulator -->
+                        <div class="relative w-full h-80 rounded-2xl bg-[#09090f] overflow-hidden border border-white/10 flex items-center justify-center">
+                            
+                            <!-- Left Side: Vanilla -->
+                            <div class="absolute inset-0 bg-slate-950 flex flex-col justify-between p-6 select-none border-r border-white/10" id="fps-left-side" style="width: 50%;">
+                                <div class="flex justify-between items-start">
+                                    <span class="text-xs font-mono font-bold bg-red-900/40 border border-red-500/30 px-2 py-1 rounded text-red-300">VANILLA MC</span>
+                                    <span id="fps-left-num" class="text-3xl font-mono font-bold text-red-400">62 FPS</span>
+                                </div>
+                                <div class="w-full flex justify-center items-center py-8">
+                                    <!-- Laggy stuttering sphere visual -->
+                                    <div id="visual-vanilla" class="w-16 h-16 rounded-full border-4 border-dashed border-red-500 animate-[spin_8s_linear_infinite] opacity-50"></div>
+                                </div>
+                                <p class="text-[10px] text-slate-500 text-center uppercase tracking-widest font-mono">Unoptimized rendering engine</p>
+                            </div>
+
+                            <!-- Right Side: Zudo Launcher (reveals automatically on top) -->
+                            <div class="absolute top-0 bottom-0 right-0 bg-gradient-to-br from-indigo-950/90 to-slate-950 flex flex-col justify-between p-6 select-none" id="fps-right-side" style="width: 50%;">
+                                <div class="flex justify-between items-start flex-row-reverse">
+                                    <span class="text-xs font-mono font-bold bg-brand/30 border border-brand/50 px-2 py-1 rounded text-brand-neon">ZUDO BOOST</span>
+                                    <span id="fps-right-num" class="text-4xl font-mono font-bold text-emerald-400 glow-text">385 FPS</span>
+                                </div>
+                                <div class="w-full flex justify-center items-center py-8">
+                                    <!-- Fluid smooth rotating sphere -->
+                                    <div id="visual-zudo" class="w-20 h-20 rounded-full bg-gradient-to-r from-brand via-indigo-500 to-cyan-400 animate-[spin_1.5s_linear_infinite] shadow-[0_0_30px_rgba(139,92,246,0.5)]"></div>
+                                </div>
+                                <p class="text-[10px] text-emerald-400 text-center uppercase tracking-widest font-mono">Proprietary dynamic opt-engine active</p>
+                            </div>
+
+                            <!-- Custom Interactive Split-line handler -->
+                            <div id="fps-slider-bar" class="absolute top-0 bottom-0 w-1 bg-brand-neon cursor-ew-resize flex items-center justify-center group" style="left: 50%;">
+                                <div class="w-8 h-8 rounded-full bg-brand border-2 border-white flex items-center justify-center text-white text-xs shadow-lg shadow-brand/40 group-hover:scale-110 transition-transform">
+                                    <i class="fa-solid fa-arrows-left-right"></i>
+                                </div>
+                            </div>
+
+                        </div>
+
+                        <!-- Bottom Controls -->
+                        <div class="mt-6 flex flex-col md:flex-row gap-4 items-center justify-between">
+                            <span class="text-xs text-slate-400 font-mono">Current Boost Status: <span class="text-emerald-400 font-bold font-mono">Active (6.2x Speedup)</span></span>
+                            <!-- Render preset Selector buttons -->
+                            <div class="flex gap-2">
+                                <button onclick="setFPSType('low-end', this)" class="bg-white/5 hover:bg-white/10 px-3 py-1.5 rounded-lg text-xs font-bold font-mono text-slate-300 transition-colors border border-white/10">Low-End PC</button>
+                                <button onclick="setFPSType('mid-range', this)" class="bg-white/5 hover:bg-white/10 px-3 py-1.5 rounded-lg text-xs font-bold font-mono text-slate-300 transition-colors border border-white/10">Mid-Range</button>
+                                <button onclick="setFPSType('high-end', this)" class="bg-brand/20 hover:bg-brand/30 px-3 py-1.5 rounded-lg text-xs font-bold font-mono text-brand-neon transition-colors border border-brand/50">High-End Rig</button>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
             </div>
         </section>
-    );
-};
 
-/* ─── Features ─── */
-const Features=()=>{
-    const features=[
-        {title:"Pure Speed",desc:"Optimized startup and performance.",icon:"zap"},
-        {title:"Zero Lag",desc:"Low resource usage for better FPS.",icon:"activity"},
-        {title:"Secure",desc:"Safe and stable launcher environment.",icon:"shield-check"},
-        {title:"Modern UI",desc:"Clean interface with smooth animations.",icon:"layout-dashboard"}
-    ];
-    return(
-        <section className="py-32 px-6">
-            <div className="max-w-7xl mx-auto">
-                <h2 className="text-5xl md:text-6xl font-black uppercase text-center mb-20">
-                    Built To <span className="text-cyan-400">Perform</span>
-                </h2>
-                <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-                    {features.map((f,i)=>{
-                        const ref=useReveal();
-                        return(
-                            <div key={i} ref={ref} className="fade-up glass p-10 rounded-[35px] card-hover">
-                                <div className="w-16 h-16 gradient rounded-2xl flex items-center justify-center mb-8 glow">
-                                    <i data-lucide={f.icon} className="w-8 h-8 text-black"></i>
-                                </div>
-                                <h3 className="text-3xl font-black mb-5">{f.title}</h3>
-                                <p className="text-gray-400">{f.desc}</p>
-                            </div>
-                        );
-                    })}
+        <!-- Core Features/Mod Manager section -->
+        <section id="mod-manager" class="py-16 border-t border-white/5">
+            <div class="text-center max-w-3xl mx-auto mb-16">
+                <span class="text-brand-neon text-sm font-extrabold uppercase tracking-widest font-mono">A COMPLETE REVAMP</span>
+                <h2 class="text-3xl md:text-5xl font-black mt-2">Launcher Capabilities</h2>
+                <p class="text-slate-400 mt-4 text-base md:text-lg">No more hunting down jar files on external sites. Everything you need is optimized and integrated from launch.</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Card 1 -->
+                <div class="glass-panel p-8 rounded-2xl border-white/5 hover:border-brand/40 transition-all duration-300 group flex flex-col justify-between">
+                    <div>
+                        <div class="w-12 h-12 rounded-xl bg-brand/10 border border-brand/20 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                            <i class="fa-solid fa-puzzle-piece text-brand-neon text-xl"></i>
+                        </div>
+                        <h3 class="text-xl font-bold mb-3 text-slate-200">Integrated Mod Installer</h3>
+                        <p class="text-slate-400 text-sm leading-relaxed">
+                            Browse, download, and toggle 500+ fabric, sodium, and forge mods directly inside Zudo launcher. Fully integrated, automatically kept up-to-date.
+                        </p>
+                    </div>
+                    <div class="mt-8 flex items-center gap-2 text-xs font-bold text-slate-500 font-mono group-hover:text-brand-neon transition-colors">
+                        <span>LEARN MORE</span>
+                        <i class="fa-solid fa-arrow-right"></i>
+                    </div>
+                </div>
+
+                <!-- Card 2 -->
+                <div class="glass-panel p-8 rounded-2xl border-white/5 hover:border-brand/40 transition-all duration-300 group flex flex-col justify-between">
+                    <div>
+                        <div class="w-12 h-12 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                            <i class="fa-solid fa-shirt text-indigo-400 text-xl"></i>
+                        </div>
+                        <h3 class="text-xl font-bold mb-3 text-slate-200">Cosmetics Hub</h3>
+                        <p class="text-slate-400 text-sm leading-relaxed">
+                            Personalize your avatar with animated capes, particle wings, dynamic hats, and pet options that are rendered in-game with zero lag.
+                        </p>
+                    </div>
+                    <div class="mt-8 flex items-center gap-2 text-xs font-bold text-slate-500 font-mono group-hover:text-brand-neon transition-colors">
+                        <span>EXPLORE GALLERY</span>
+                        <i class="fa-solid fa-arrow-right"></i>
+                    </div>
+                </div>
+
+                <!-- Card 3 -->
+                <div class="glass-panel p-8 rounded-2xl border-white/5 hover:border-brand/40 transition-all duration-300 group flex flex-col justify-between">
+                    <div>
+                        <div class="w-12 h-12 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                            <i class="fa-solid fa-compass text-cyan-400 text-xl"></i>
+                        </div>
+                        <h3 class="text-xl font-bold mb-3 text-slate-200">Zudo Cloud Profiles</h3>
+                        <p class="text-slate-400 text-sm leading-relaxed">
+                            Sync your keybinds, mods, custom crosshair settings, and server files securely to the cloud. Access your profile on any machine instantly.
+                        </p>
+                    </div>
+                    <div class="mt-8 flex items-center gap-2 text-xs font-bold text-slate-500 font-mono group-hover:text-brand-neon transition-colors">
+                        <span>READ SPECIFICATION</span>
+                        <i class="fa-solid fa-arrow-right"></i>
+                    </div>
                 </div>
             </div>
         </section>
-    );
-};
 
-/* ─── About ─── */
-const About=()=>{
-    const ref=useReveal();
-    return(
-        <section className="py-32 px-6">
-            <div ref={ref} className="fade-up max-w-5xl mx-auto text-center">
-                <h2 className="text-5xl md:text-6xl font-black uppercase mb-12">
-                    About <span className="text-cyan-400">Zudo</span>
-                </h2>
-                <p className="text-xl text-gray-400 leading-relaxed">
-                    Zudo Launcher is designed to provide a fast, stable, and smooth Minecraft experience for every player.
-                    We focus on performance, simplicity, modern design, and regular improvements for the community.
-                </p>
+        <!-- Launcher Timeline Tracker -->
+        <section id="timeline" class="py-16 border-t border-white/5">
+            <div class="text-center max-w-3xl mx-auto mb-16">
+                <span class="text-brand-neon text-sm font-extrabold uppercase tracking-widest font-mono">THE ROAD AHEAD</span>
+                <h2 class="text-3xl md:text-5xl font-black mt-2">Launch Roadmap</h2>
+                <p class="text-slate-400 mt-4 text-base md:text-lg">Follow our current countdown phases as we head toward official v2.0 open release.</p>
+            </div>
+
+            <!-- Timeline Steps -->
+            <div class="max-w-4xl mx-auto space-y-8 relative before:absolute before:inset-0 before:left-4 md:before:left-1/2 before:w-0.5 before:bg-white/10 before:-z-10">
+                
+                <!-- Phase 1 (Completed) -->
+                <div class="flex flex-col md:flex-row items-start md:items-center relative group">
+                    <div class="w-8 h-8 rounded-full bg-emerald-500 border-4 border-slate-950 flex items-center justify-center absolute left-0 md:left-1/2 -translate-x-3.5 md:-translate-x-1/2 z-10">
+                        <i class="fa-solid fa-check text-xs text-white"></i>
+                    </div>
+                    <div class="w-full md:w-1/2 pl-12 md:pl-0 md:pr-16 text-left md:text-right">
+                        <span class="text-xs font-bold font-mono text-emerald-400 uppercase tracking-widest">Phase 1 • Done</span>
+                        <h4 class="text-xl font-bold mt-1 text-slate-200">Alpha & Framework Revamp</h4>
+                        <p class="text-sm text-slate-400 mt-2">Rewrote the core launcher in multi-threaded asynchronous architecture, cutting launch times by 80%.</p>
+                    </div>
+                    <div class="hidden md:block w-1/2"></div>
+                </div>
+
+                <!-- Phase 2 (In Progress) -->
+                <div class="flex flex-col md:flex-row items-start md:items-center relative group">
+                    <div class="w-8 h-8 rounded-full bg-brand-neon border-4 border-slate-950 flex items-center justify-center absolute left-0 md:left-1/2 -translate-x-3.5 md:-translate-x-1/2 z-10 animate-pulse">
+                        <span class="w-2.5 h-2.5 rounded-full bg-brand-glow"></span>
+                    </div>
+                    <div class="hidden md:block w-1/2"></div>
+                    <div class="w-full md:w-1/2 pl-12 md:pl-16 text-left">
+                        <span class="text-xs font-bold font-mono text-brand-neon uppercase tracking-widest">Phase 2 • CURRENT ACTIVE STAGE</span>
+                        <h4 class="text-xl font-bold mt-1 text-slate-200">Beta Reservists Open</h4>
+                        <p class="text-sm text-slate-400 mt-2">Registering original usernames and stress-testing optimization code over active tester networks.</p>
+                    </div>
+                </div>
+
+                <!-- Phase 3 (Future) -->
+                <div class="flex flex-col md:flex-row items-start md:items-center relative group">
+                    <div class="w-8 h-8 rounded-full bg-slate-800 border-4 border-slate-950 flex items-center justify-center absolute left-0 md:left-1/2 -translate-x-3.5 md:-translate-x-1/2 z-10">
+                        <i class="fa-solid fa-lock text-xs text-slate-400"></i>
+                    </div>
+                    <div class="w-full md:w-1/2 pl-12 md:pl-0 md:pr-16 text-left md:text-right">
+                        <span class="text-xs font-bold font-mono text-slate-500 uppercase tracking-widest">Phase 3 • In 1 Week</span>
+                        <h4 class="text-xl font-bold mt-1 text-slate-300">Cosmetics Hub Reveal</h4>
+                        <p class="text-sm text-slate-400 mt-2">Launching a real-time web showroom displaying custom player cosmetics, wings, and hats.</p>
+                    </div>
+                    <div class="hidden md:block w-1/2"></div>
+                </div>
+
+                <!-- Phase 4 (Launch) -->
+                <div class="flex flex-col md:flex-row items-start md:items-center relative group">
+                    <div class="w-8 h-8 rounded-full bg-slate-800 border-4 border-slate-950 flex items-center justify-center absolute left-0 md:left-1/2 -translate-x-3.5 md:-translate-x-1/2 z-10">
+                        <i class="fa-solid fa-rocket text-xs text-slate-400"></i>
+                    </div>
+                    <div class="hidden md:block w-1/2"></div>
+                    <div class="w-full md:w-1/2 pl-12 md:pl-16 text-left">
+                        <span class="text-xs font-bold font-mono text-slate-500 uppercase tracking-widest">Phase 4 • Relaunch</span>
+                        <h4 class="text-xl font-bold mt-1 text-slate-300">Official Release (V2.0)</h4>
+                        <p class="text-sm text-slate-400 mt-2">Public client launch, unlocking fast-launching tools, server configs, and integrated premium modifications.</p>
+                    </div>
+                </div>
+
             </div>
         </section>
-    );
-};
 
-/* ─── Footer ─── */
-const Footer=()=>(
-    <footer className="border-t border-white/5 py-16">
-        <div className="max-w-7xl mx-auto px-6 text-center">
-            <img src="logo.png" className="w-14 h-14 mx-auto mb-6" style={{objectFit:'contain',filter:'drop-shadow(0 0 18px rgba(0,225,255,0.5))'}}/>
-            <h2 className="text-3xl font-black uppercase mb-4">Zudo Launcher</h2>
-            <p className="text-gray-500">© 2026 Zudo Launcher. All rights reserved.</p>
+    </main>
+
+    <!-- Footer banner -->
+    <footer class="glass-panel border-t border-white/5 mt-16 py-8">
+        <div class="max-w-7xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs font-mono text-slate-500">
+            <p>&copy; 2026 Zudo Launcher. Not affiliated with Mojang Studios or Microsoft.</p>
+            <div class="flex gap-4">
+                <a href="#" class="hover:text-white transition-colors">Privacy Policy</a>
+                <a href="#" class="hover:text-white transition-colors">Terms of Service</a>
+                <a href="#" class="hover:text-white transition-colors">Contact Support</a>
+            </div>
         </div>
     </footer>
-);
 
-/* ─── App ─── */
-const App=()=>{
-    useEffect(()=>{
-        /* hide loader after page ready */
-        const loader=document.getElementById("loadingScreen");
-        setTimeout(()=>{
-            loader.classList.add("hide");
-            setTimeout(()=>{loader.style.display="none";},650);
-        },1800);
-        if(window.lucide)window.lucide.createIcons();
-    },[]);
-
-    return(
-        <div className="relative min-h-screen bg-[#030303]">
-            <div className="site-bg"></div>
-            <div className="bg-overlay"></div>
-            <SnowEffect/>
-            <ThunderEffect/>
-            <Navbar/>
-            <div className="relative z-10 page-transition">
-                <Hero/>
-                <Features/>
-                <About/>
+    <!-- Custom Micro-notification Success Modal (avoiding raw browser alerts) -->
+    <div id="toast" class="fixed bottom-6 right-6 z-50 transform translate-y-20 opacity-0 pointer-events-none transition-all duration-500 max-w-sm w-full">
+        <div class="glass-panel-heavy p-4 rounded-xl shadow-2xl border-brand flex items-start gap-3">
+            <div class="w-10 h-10 rounded-full bg-emerald-500/10 border border-emerald-500/40 flex items-center justify-center flex-shrink-0 text-emerald-400">
+                <i class="fa-solid fa-check-double text-lg"></i>
             </div>
-            <Footer/>
+            <div class="flex-1">
+                <h4 class="font-bold text-slate-100 text-sm">Username Reserved!</h4>
+                <p class="text-slate-400 text-xs mt-1" id="toast-msg">Awesome! Your IGN has been locked with beta priority key.</p>
+            </div>
+            <button onclick="dismissToast()" class="text-slate-500 hover:text-white">
+                <i class="fa-solid fa-xmark text-sm"></i>
+            </button>
         </div>
-    );
-};
+    </div>
 
-ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
 
-</script>
+    <!-- JS Logics -->
+    <script>
+        // Synthesizer Audio Utility
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        let audioCtx;
+        
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new AudioContext();
+            }
+        }
+
+        // Play sleek futuristic UI micro-beep
+        function playBeep(frequency, type, duration) {
+            try {
+                initAudio();
+                if (!audioCtx) return;
+                
+                // Keep sound context updated
+                if (audioCtx.state === 'suspended') {
+                    audioCtx.resume();
+                }
+
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+
+                osc.type = type || 'sine';
+                osc.frequency.setValueAtTime(frequency || 440, audioCtx.currentTime);
+                
+                gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + duration);
+
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+
+                osc.start();
+                osc.stop(audioCtx.currentTime + duration);
+            } catch(e) {
+                // Ignore audio issues on browser restrictions
+            }
+        }
+
+        // Particle System background simulation
+        const canvas = document.getElementById('particleCanvas');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+        let width, height;
+        let mouseX = 0, mouseY = 0;
+
+        function resizeCanvas() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+        }
+
+        class Particle {
+            constructor() {
+                this.x = Math.random() * width;
+                this.y = Math.random() * height;
+                this.vx = (Math.random() - 0.5) * 0.4;
+                this.vy = (Math.random() - 0.5) * 0.4;
+                this.radius = Math.random() * 2 + 1;
+                this.alpha = Math.random() * 0.5 + 0.1;
+            }
+
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+
+                // Bounce at borders
+                if (this.x < 0 || this.x > width) this.vx *= -1;
+                if (this.y < 0 || this.y > height) this.vy *= -1;
+
+                // Mouse push slight drift effect
+                const dx = this.x - mouseX;
+                const dy = this.y - mouseY;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+                if (dist < 180) {
+                    const force = (180 - dist) / 180;
+                    this.x += (dx / dist) * force * 1.5;
+                    this.y += (dy / dist) * force * 1.5;
+                }
+            }
+
+            draw() {
+                ctx.save();
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(139, 92, 246, ${this.alpha})`;
+                ctx.shadowBlur = 5;
+                ctx.shadowColor = '#8b5cf6';
+                ctx.fill();
+                ctx.restore();
+            }
+        }
+
+        function initParticles() {
+            resizeCanvas();
+            particles = [];
+            const particleCount = Math.floor(width / 16);
+            for (let i = 0; i < particleCount; i++) {
+                particles.push(new Particle());
+            }
+        }
+
+        function animateParticles() {
+            ctx.clearRect(0, 0, width, height);
+            
+            // Draw connections
+            ctx.strokeStyle = 'rgba(139, 92, 246, 0.04)';
+            ctx.lineWidth = 1;
+            for (let i = 0; i < particles.length; i++) {
+                for (let j = i + 1; j < particles.length; j++) {
+                    const dx = particles[i].x - particles[j].x;
+                    const dy = particles[i].y - particles[j].y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+
+                    if (dist < 120) {
+                        ctx.beginPath();
+                        ctx.moveTo(particles[i].x, particles[i].y);
+                        ctx.lineTo(particles[j].x, particles[j].y);
+                        ctx.stroke();
+                    }
+                }
+            }
+
+            particles.forEach(p => {
+                p.update();
+                p.draw();
+            });
+
+            requestAnimationFrame(animateParticles);
+        }
+
+        window.addEventListener('resize', initParticles);
+        window.addEventListener('mousemove', (e) => {
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+        });
+
+        // Countdown calculations
+        // Dynamic countdown: Target exactly 14 days from initial render to make the countdown constantly look active & hot!
+        let countdownTarget = new Date();
+        countdownTarget.setDate(countdownTarget.getDate() + 14);
+        countdownTarget.setHours(countdownTarget.getHours() + 6);
+        countdownTarget.setMinutes(countdownTarget.getMinutes() + 32);
+
+        function updateCountdown() {
+            const now = new Date().getTime();
+            const difference = countdownTarget - now;
+
+            const days = Math.floor(difference / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((difference % (1000 * 60)) / 1000);
+
+            document.getElementById('days').textContent = String(days).padStart(2, '0');
+            document.getElementById('hours').textContent = String(hours).padStart(2, '0');
+            document.getElementById('minutes').textContent = String(minutes).padStart(2, '0');
+            document.getElementById('seconds').textContent = String(seconds).padStart(2, '0');
+        }
+
+        // Interactive Slider logic
+        const sliderBar = document.getElementById('fps-slider-bar');
+        const rightSide = document.getElementById('fps-right-side');
+        const container = sliderBar.parentElement;
+
+        let isDragging = false;
+
+        function updateSliderPosition(clientX) {
+            const rect = container.getBoundingClientRect();
+            let x = clientX - rect.left;
+            // Bound limits
+            if (x < 0) x = 0;
+            if (x > rect.width) x = rect.width;
+
+            const percentage = (x / rect.width) * 100;
+            sliderBar.style.left = `${percentage}%`;
+            // Mask right side width
+            rightSide.style.width = `${100 - percentage}%`;
+        }
+
+        // Mouse events
+        sliderBar.addEventListener('mousedown', (e) => {
+            isDragging = true;
+            playBeep(320, 'triangle', 0.1);
+        });
+
+        window.addEventListener('mouseup', () => {
+            isDragging = false;
+        });
+
+        window.addEventListener('mousemove', (e) => {
+            if (!isDragging) return;
+            updateSliderPosition(e.clientX);
+        });
+
+        // Touch events
+        sliderBar.addEventListener('touchstart', (e) => {
+            isDragging = true;
+            playBeep(320, 'triangle', 0.1);
+        });
+
+        window.addEventListener('touchend', () => {
+            isDragging = false;
+        });
+
+        window.addEventListener('touchmove', (e) => {
+            if (!isDragging) return;
+            updateSliderPosition(e.touches[0].clientX);
+        });
+
+        // FPS Config State Changer
+        let activeFPSType = 'high-end';
+        function setFPSType(preset, btnElement) {
+            playBeep(580, 'sine', 0.08);
+            
+            // Remove active style from siblings
+            const siblings = btnElement.parentElement.children;
+            for (let sibling of siblings) {
+                sibling.classList.remove('bg-brand/20', 'border-brand/50', 'text-brand-neon');
+                sibling.classList.add('bg-white/5', 'border-white/10', 'text-slate-300');
+            }
+            // Add style to selected
+            btnElement.classList.add('bg-brand/20', 'border-brand/50', 'text-brand-neon');
+            btnElement.classList.remove('bg-white/5', 'border-white/10', 'text-slate-300');
+
+            // Values Map
+            const fpsValues = {
+                'low-end': { vanilla: '22 FPS', zudo: '124 FPS' },
+                'mid-range': { vanilla: '45 FPS', zudo: '210 FPS' },
+                'high-end': { vanilla: '62 FPS', zudo: '385 FPS' }
+            };
+
+            const selected = fpsValues[preset];
+            document.getElementById('fps-left-num').textContent = selected.vanilla;
+            document.getElementById('fps-right-num').textContent = selected.zudo;
+        }
+
+        // Custom Toast Dialog Trigger
+        function triggerToast(message) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toast-msg').textContent = message;
+            toast.classList.remove('translate-y-20', 'opacity-0', 'pointer-events-none');
+            
+            // Auto hide after 6 seconds
+            setTimeout(() => {
+                dismissToast();
+            }, 6000);
+        }
+
+        function dismissToast() {
+            const toast = document.getElementById('toast');
+            toast.classList.add('translate-y-20', 'opacity-0', 'pointer-events-none');
+        }
+
+        // Beta Username Form Handler
+        function handleBetaSubmit(event) {
+            event.preventDefault();
+            const ign = document.getElementById('beta-username').value.trim();
+            if (ign.length < 3) {
+                playBeep(180, 'sawtooth', 0.3);
+                return;
+            }
+
+            // Play rewarding chime sound
+            playBeep(523, 'sine', 0.1);
+            setTimeout(() => playBeep(659, 'sine', 0.1), 100);
+            setTimeout(() => playBeep(784, 'sine', 0.25), 200);
+
+            // Register Mock logic
+            triggerToast(`Congrats! Minecraft IGN "${ign}" has been successfully reserved with early release beta codes.`);
+            document.getElementById('beta-username').value = '';
+        }
+
+        // Main initializations
+        window.onload = function() {
+            initParticles();
+            animateParticles();
+            updateCountdown();
+            setInterval(updateCountdown, 1000);
+        }
+    </script>
 </body>
 </html>
